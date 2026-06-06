@@ -12,10 +12,20 @@
   "type": "commonjs",
   "dependencies": {
     "@prisma/client": "^7.8.0",
+    "@supabase/supabase-js": "^2.107.0",
+    "axios": "^1.17.0",
     "bcryptjs": "^3.0.3",
-    "dotenv": "^17.4.2",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "prisma": "^7.8.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SharpTrack101/SharpTrack.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SharpTrack101/SharpTrack/issues"
+  },
+  "homepage": "https://github.com/SharpTrack101/SharpTrack#readme"
 }
