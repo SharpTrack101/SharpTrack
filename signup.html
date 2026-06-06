@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SharpTrack - Create Account</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0a4d33;
             --primary-dark: #083b27;
-            --primary-light: #e9f1ed;
-            --bg: #fdf6e2;
-            --bg-card: rgba(255,255,255,0.45);
-            --border:#c0ccc6;
-            --placeholder:#99a7a0;
-            --label: #4a5d55;
+            --bg: #f0ebe0;
+            --card-bg: #ffffff;
+            --border: #e8e3d8;
             --text: #1a2e26;
-            --gradient-blob-1: rgba(10, 77, 51, 0.07);
-            --gradient-blob-2: rgba(10, 77, 51, 0.04);
+            --muted: #7a8880;
+            --orange: #e07b2a;
+            --orange-bg: #fdf3ea;
         }
 
         * {
@@ -27,12 +24,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        html {
-            height: 100%;
-        }
-
         body {
-            background-color:#fdf6e2;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at bottom right, rgba(10, 77, 51, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(10, 77, 51, 0.08) 0%, transparent 50%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -40,62 +35,52 @@
             padding: 20px;
             position: relative;
             overflow-x: hidden;
-        }
-
-        /* Extra blob bottom center */
-        .blob-center {
-            position: fixed;
-            bottom: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 200px;
-            background: radial-gradient(ellipse, rgba(10, 77, 51, 0.06) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 90px;
         }
 
         .container {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             position: relative;
             z-index: 1;
-            background: transparent;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         /* Logo */
-            .logo-section {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 44px;
+        .logo-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
         }
 
         .logo-img {
-            width: 280px; /* Adjust based on the actual logo image aspect ratio */
+            width: 280px;
             max-width: 100%;
             height: auto;
-        }
-        
-
-        .logo-svg {
-            width: 58px;
-            height: 58px;
+            mix-blend-mode: multiply;
         }
 
-        
         /* Form */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: 700;
-            color: var(--label);
-            margin-bottom: 8px;
-            letter-spacing: 0.1px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .input-wrapper {
@@ -108,14 +93,12 @@
             width: 100%;
             padding: 14px 45px;
             border: 1.5px solid var(--border);
-            border-radius: 14px;
-            font-size: 15px;
-            background-color: rgba(255, 255, 255, 0.5);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 400;
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #fafaf8;
             color: var(--text);
             outline: none;
-            transition: border-color 0.3s, background-color 0.3s;
+            transition: border-color 0.2s, background-color 0.2s;
         }
 
         .input-wrapper input:focus {
@@ -124,8 +107,8 @@
         }
 
         .input-wrapper input::placeholder {
-            color: var(--placeholder);
-            font-weight: 400;
+            color: var(--muted);
+            opacity: 0.7;
         }
 
         .icon-left {
@@ -146,13 +129,18 @@
             align-items: center;
             padding: 4px;
             border-radius: 6px;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.1s;
         }
 
         .icon-right:hover {
             opacity: 0.7;
         }
 
+        .icon-right:active {
+            transform: scale(0.95);
+        }
+
+        /* Icons styling */
         svg.icon {
             width: 20px;
             height: 20px;
@@ -166,35 +154,33 @@
         /* Sign Up Button */
         .signup-btn {
             width: 100%;
-            padding: 17px;
+            padding: 16px;
             background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 16px;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 700;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             cursor: pointer;
             margin-top: 10px;
-            letter-spacing: 0.2px;
-            transition: background-color 0.25s, transform 0.1s, box-shadow 0.25s;
-            box-shadow: 0 4px 20px rgba(10, 77, 51, 0.25);
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px 16px rgba(10, 77, 51, 0.2);
         }
 
         .signup-btn:hover {
             background-color: var(--primary-dark);
-            box-shadow: 0 6px 24px rgba(10, 77, 51, 0.35);
+            box-shadow: 0 6px 20px rgba(10, 77, 51, 0.3);
         }
 
         .signup-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
 
         /* Footer */
         .footer-text {
-            margin-top: 28px;
+            margin-top: 24px;
             font-size: 14px;
-            color: #7a8e86;
+            color: var(--muted);
             text-align: center;
             font-weight: 500;
         }
@@ -203,57 +189,36 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 700;
+            transition: color 0.2s;
         }
 
         .signin-link:hover {
             text-decoration: underline;
+            color: var(--primary-dark);
         }
 
-        /* PIN input - numbers only keyboard on mobile */
+        /* PIN input formatting */
         input[inputmode="numeric"] {
             letter-spacing: 4px;
-            font-size: 18px;
             font-weight: 600;
         }
 
         input[inputmode="numeric"]::placeholder {
             letter-spacing: normal;
-            font-size: 15px;
             font-weight: 400;
-        }
-
-        /* Smooth page load */
-        .container {
-            animation: fadeUp 0.4s ease both;
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive tweaks */
-        @media (max-width: 380px) {
-            body { padding: 28px 16px 60px; }
-            .logo-name { font-size: 26px; }
-            .signup-btn { font-size: 16px; padding: 15px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="blob-center"></div>
-
     <div class="container">
-
         <!-- Logo -->
         <div class="logo-section">
-            <img src="logo3.png" alt="SharpTrack Logo" class="logo-img">
+            <img src="logo2.png" alt="SharpTrack Logo" class="logo-img">
         </div>
 
-        <!-- Signup Form -->
-        <form id="signupForm" novalidate>
-
+        <!-- Signup Form Container (No <form> tag) -->
+        <div id="signupForm">
             <!-- First Name -->
             <div class="form-group">
                 <label for="firstName">First Name</label>
@@ -310,7 +275,7 @@
                         <svg class="icon" id="pin-eye" viewBox="0 0 24 24">
                             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                             <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                            <path d="m1 1 22 22"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
                         </svg>
                     </span>
                 </div>
@@ -331,19 +296,18 @@
                         <svg class="icon" id="confirmPin-eye" viewBox="0 0 24 24">
                             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                             <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                            <path d="m1 1 22 22"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
                         </svg>
                     </span>
                 </div>
             </div>
 
             <button type="button" class="signup-btn" onclick="handleSignup()">Sign Up</button>
-        </form>
-
-        <div class="footer-text">
-            Already have an account? <a href="index.html" class="signin-link">Sign In</a>
         </div>
 
+        <div class="footer-text">
+            Already have an account? <a href="login.html" class="signin-link">Sign In</a>
+        </div>
     </div>
 
     <script>
@@ -361,7 +325,7 @@
                 : `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                         <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                        <path d="m1 1 22 22"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
                    </svg>`;
         }
 
@@ -387,11 +351,9 @@
                 return;
             }
 
-            // Redirect to dashboard when backend is ready
-            alert('Account created successfully!');
-            // window.location.href = 'dashboard.html';
+            alert('Account created successfully! Please sign in.');
+            window.location.href = 'login.html';
         }
     </script>
-
 </body>
 </html>

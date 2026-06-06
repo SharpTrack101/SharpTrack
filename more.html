@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharpTrack - More</title>
+    <style>
+        :root {
+            --primary: #0a4d33;
+            --primary-dark: #083b27;
+            --bg: #f0ebe0;
+            --card-bg: #ffffff;
+            --border: #e8e3d8;
+            --text: #1a2e26;
+            --muted: #7a8880;
+            --orange: #e07b2a;
+            --orange-bg: #fdf3ea;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            padding-bottom: 90px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-logo img {
+            height: 56px;
+            width: auto;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+        }
+
+        .hamburger {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 6px;
+            border-radius: 6px;
+            transition: transform 0.1s;
+        }
+        .hamburger:active { transform: scale(0.95); }
+        .hamburger span { width: 22px; height: 2px; background: var(--text); border-radius: 2px; display: block; }
+
+        .bell-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text);
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, color 0.2s;
+        }
+        .bell-btn:active { transform: scale(0.95); }
+
+        .bell-badge {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        svg.icon {
+            width: 22px; height: 22px;
+            fill: none; stroke: currentColor;
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+        }
+
+        /* CONTENT */
+        .content { padding: 0 20px; }
+
+        /* PAGE TITLE */
+        .page-title {
+            margin-bottom: 20px;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .page-title p {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* PROFILE CARD */
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .profile-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #edf5ef;
+            color: var(--primary);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-info .store-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .profile-info .owner-name {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* SETTINGS SECTION */
+        .section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            background: none;
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            width: 100%;
+            text-align: left;
+            transition: transform 0.1s;
+        }
+
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item:active { transform: scale(0.98); }
+
+        .setting-img {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: #f5f5f0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .setting-info { flex: 1; min-width: 0; }
+        .setting-info .title { font-size: 14px; font-weight: 600; color: var(--text); }
+        .setting-info .subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        .chevron {
+            color: var(--muted);
+            font-size: 18px;
+            font-weight: 600;
+            padding-right: 4px;
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px 0 16px;
+            border-top: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 500;
+            border: none;
+            background: none;
+            padding: 0 8px;
+            transition: transform 0.1s, color 0.2s;
+        }
+
+        .nav-item.active { color: var(--primary); }
+        .nav-item:active { transform: scale(0.95); }
+        .nav-item svg { width: 22px; height: 22px; }
+
+        .fab {
+            width: 52px; height: 52px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            border: none;
+            position: relative; margin-right:10px; bottom: 16px;
+            margin-top: 10px;
+            box-shadow: 0 4px 16px rgba(10,77,51,0.35);
+            color: white;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .fab:active { transform: scale(0.95); }
+        .fab svg { width: 24px; height: 24px; stroke: white; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="hamburger">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="nav-logo">
+            <img src="logo2.png" alt="SharpTrack">
+        </div>
+        <button class="bell-btn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="bell-badge">3</span>
+        </button>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- PAGE TITLE -->
+        <div class="page-title">
+            <h1>More</h1>
+            <p>Configure account and system settings.</p>
+        </div>
+
+        <!-- PROFILE CARD -->
+        <div class="profile-card">
+            <div class="profile-avatar">🏪</div>
+            <div class="profile-info">
+                <div class="store-name">Sarah's Mega Store</div>
+                <div class="owner-name">Sarah Peters &bull; +234 801 234 5678</div>
+            </div>
+        </div>
+
+        <!-- SETTINGS SECTION -->
+        <div class="section">
+            <div class="section-title">Account Settings</div>
+
+            <!-- Business Profile -->
+            <button class="setting-item" onclick="alert('Business profile editing is not available in offline mode.')">
+                <div class="setting-img">🏬</div>
+                <div class="setting-info">
+                    <div class="title">Business Profile</div>
+                    <div class="subtitle">Manage storefront name, address and info</div>
+                </div>
+                <span class="chevron">&rsaquo;</span>
+            </button>
+
+            <!-- Notifications -->
+            <button class="setting-item" onclick="alert('Notifications configured!')">
+                <div class="setting-img">🔔</div>
+                <div class="setting-info">
+                    <div class="title">Notifications</div>
+                    <div class="subtitle">Toggle push notifications and sound alerts</div>
+                </div>
+                <span class="chevron">&rsaquo;</span>
+            </button>
+
+            <!-- Security & PIN -->
+            <button class="setting-item" onclick="alert('Security configuration offline.')">
+                <div class="setting-img">🔑</div>
+                <div class="setting-info">
+                    <div class="title">Security & PIN</div>
+                    <div class="subtitle">Change your 6-digit login PIN</div>
+                </div>
+                <span class="chevron">&rsaquo;</span>
+            </button>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Support & Action</div>
+
+            <!-- Help & Support -->
+            <button class="setting-item" onclick="alert('Offline Help Docs loaded.')">
+                <div class="setting-img">❓</div>
+                <div class="setting-info">
+                    <div class="title">Help & Support</div>
+                    <div class="subtitle">FAQ, customer support and documentation</div>
+                </div>
+                <span class="chevron">&rsaquo;</span>
+            </button>
+
+            <!-- Sign Out -->
+            <button class="setting-item" onclick="handleSignOut()">
+                <div class="setting-img" style="background:#fdecea; color:#e53935;">🚪</div>
+                <div class="setting-info">
+                    <div class="title" style="color:#e53935;">Sign Out</div>
+                    <div class="subtitle">Log out of your SharpTrack account</div>
+                </div>
+                <span class="chevron" style="color:#e53935;">&rsaquo;</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="window.location.href='dashboard.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Dashboard
+        </button>
+        <button class="nav-item" onclick="window.location.href='inventory.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Inventory
+        </button>
+        <button class="fab" onclick="window.location.href='add-stock.html'">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="nav-item" onclick="window.location.href='record-sale.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Sales
+        </button>
+        <button class="nav-item active" onclick="window.location.href='more.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            More
+        </button>
+    </nav>
+
+    <script>
+        function handleSignOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -10,9 +10,11 @@
             --primary-dark: #083b27;
             --bg: #f0ebe0;
             --card-bg: #ffffff;
-            --border: #e0dbd0;
+            --border: #e8e3d8;
             --text: #1a2e26;
             --muted: #7a8880;
+            --orange: #e07b2a;
+            --orange-bg: #fdf3ea;
             --red: #e53935;
             --red-bg: #fdecea;
         }
@@ -23,7 +25,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg);
             min-height: 100vh;
-            padding-bottom: 100px;
+            padding-bottom: 90px; /* Aligned to 90px always */
             max-width: 480px;
             margin: 0 auto;
         }
@@ -46,11 +48,15 @@
             color: var(--text);
             display: flex;
             align-items: center;
+            padding: 6px;
+            border-radius: 6px;
+            transition: transform 0.1s, color 0.2s;
         }
+        .back-btn:active { transform: scale(0.9); }
 
         .header h1 {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 24px; /* Page titles: 22-28px */
+            font-weight: 800; /* font-weight: 800 */
             color: var(--primary);
         }
 
@@ -63,13 +69,13 @@
         }
 
         .header-text h1 {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             color: var(--primary);
         }
 
         .header-text p {
-            font-size: 13px;
+            font-size: 12px; /* Labels/subtitles: 12px */
             color: var(--muted);
             margin-top: 2px;
         }
@@ -146,13 +152,14 @@
         }
 
         /* CONTENT */
-        .content { padding: 0 16px; }
+        .content { padding: 0 20px; } /* Content padding: 0 20px */
 
         .section {
             background: var(--card-bg);
             border-radius: 16px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 20px; /* Section margin-bottom: 20px */
+            border: 1px solid var(--border);
         }
 
         .section-title {
@@ -174,13 +181,15 @@
         }
 
         .section-title h2 {
-            font-size: 15px;
+            font-size: 13px; /* Section headers: 13-15px */
             font-weight: 700;
             color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .section-sub {
-            font-size: 12px;
+            font-size: 12px; /* Labels/subtitles: 12px */
             color: var(--muted);
             margin-bottom: 14px;
             padding-left: 36px;
@@ -242,13 +251,16 @@
             gap: 6px;
             background: none;
             border: 1.5px solid var(--primary);
-            border-radius: 8px;
+            border-radius: 10px; /* Secondary button border-radius: 10px */
             padding: 6px 12px;
             font-size: 13px;
             font-weight: 600;
             color: var(--primary);
             cursor: pointer;
+            transition: transform 0.1s, border-color 0.2s, color 0.2s;
         }
+        .add-item-btn:hover { background: #edf5ef; }
+        .add-item-btn:active { transform: scale(0.97); }
 
         /* ITEM ROW */
         .item-row {
@@ -267,7 +279,7 @@
         .tag-icon {
             width: 36px; height: 36px;
             background: #f5f5f0;
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             color: var(--muted);
         }
@@ -282,7 +294,7 @@
             width: 100%;
             padding: 8px;
             border: 1.5px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px; /* Forms / Inputs: 8-10px */
             font-size: 13px;
             font-family: inherit;
             background: #fafaf8;
@@ -300,7 +312,11 @@
             color: var(--red);
             display: flex;
             align-items: center;
+            padding: 4px;
+            border-radius: 6px;
+            transition: transform 0.1s;
         }
+        .delete-btn:active { transform: scale(0.9); }
 
         .col-labels {
             display: grid;
@@ -310,10 +326,12 @@
         }
 
         .col-label {
-            font-size: 11px;
+            font-size: 12px; /* Labels/subtitles: 12px */
             color: var(--muted);
-            font-weight: 600;
+            font-weight: 700;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .col-label:nth-child(3) { text-align: left; }
@@ -324,16 +342,18 @@
         .review-table th {
             font-size: 12px;
             color: var(--muted);
-            font-weight: 600;
+            font-weight: 700;
             text-align: left;
             padding: 6px 0;
             border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .review-table th:not(:first-child) { text-align: right; }
 
         .review-table td {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text);
             padding: 10px 0;
             border-bottom: 1px solid var(--border);
@@ -352,7 +372,7 @@
             margin-top: 4px;
         }
 
-        .review-total .label { font-size: 13px; color: var(--muted); font-weight: 600; }
+        .review-total .label { font-size: 12px; color: var(--muted); font-weight: 600; }
         .review-total .value { font-size: 16px; font-weight: 700; color: var(--primary); }
 
         /* SAVE BUTTON */
@@ -363,6 +383,7 @@
             margin: 0 auto;
             padding: 16px 20px 28px;
             background: var(--bg);
+            z-index: 10;
         }
 
         .save-btn button {
@@ -380,11 +401,12 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: background 0.2s;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px 16px rgba(10, 77, 51, 0.25);
         }
 
         .save-btn button:hover { background: var(--primary-dark); }
-        .save-btn button:active { transform: scale(0.98); }
+        .save-btn button:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -583,8 +605,8 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     const upload = document.querySelector('.photo-upload');
-                    upload.innerHTML = `<img src="${e.target.result}" style="width:100%; border-radius:8px; max-height:200px; object-fit:cover;">
-                    <button onclick="retakePhoto(event)" style="margin-top:10px; background:rgba(0,0,0,0.5); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px;">📷 Retake Photo</button>`;
+                    upload.innerHTML = `<img src="${e.target.result}" style="width:100%; border-radius:12px; max-height:200px; object-fit:cover;">
+                    <button onclick="retakePhoto(event)" style="margin-top:10px; background:rgba(0,0,0,0.5); color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer; font-size:13px; transition: transform 0.1s;">📷 Retake Photo</button>`;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
