@@ -306,7 +306,7 @@
         </div>
 
         <div class="footer-text">
-            Already have an account? <a href="login.html" class="signin-link">Sign In</a>
+            Already have an account? <a href="index.html" class="signin-link">Sign In</a>
         </div>
     </div>
 
@@ -329,7 +329,7 @@
                    </svg>`;
         }
 
-        function handleSignup() {
+                async function handleSignup() {
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const phone = document.getElementById('phone').value.trim();
@@ -337,22 +337,35 @@
             const confirmPin = document.getElementById('confirmPin').value.trim();
 
             if (!firstName || !lastName || !phone || !pin || !confirmPin) {
-                alert('Please fill in all fields.');
-                return;
+                alert('Please fill in all fields.'); return;
             }
-
-            if (pin.length !== 6 || !/^\d+$/.test(pin)) {
-                alert('PIN must be exactly 6 digits.');
-                return;
+            if (!/^\d{6}$/.test(pin)) {
+                alert('PIN must be exactly 6 digits.'); return;
             }
-
             if (pin !== confirmPin) {
-                alert('PINs do not match. Please try again.');
-                return;
+                alert('PINs do not match.'); return;
             }
 
-            alert('Account created successfully! Please sign in.');
-            window.location.href = 'login.html';
+            localStorage.setItem('pendingSignup', JSON.stringify({ 
+                name: firstName + ' ' + lastName, phone, pin 
+            }));
+
+            try {
+                const otpRes = await fetch('http://localhost:3000/api/otp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const otpData = await otpRes.json();
+
+                if (otpRes.ok) {
+                    window.location.href = 'verify.html';
+                } else {
+                    alert(otpData.error || 'Failed to send OTP');
+                }
+            } catch (e) {
+                alert('Cannot connect to server.');
+            }
         }
     </script>
 </body>

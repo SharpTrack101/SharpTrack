@@ -246,7 +246,60 @@
                 </div>
             </div>
 
-            <button type="button" class="signin-btn" onclick="handleLogin()">Sign In</button>
+            <button type="button" class="signin-btn" onclick="async function handleSignup() {
+               // Before sending to backend, save data and send OTP
+                const signupData = { name: firstName + ' ' + lastName, phone, pin };
+                localStorage.setItem('pendingSignup', JSON.stringify(signupData));
+
+                // Send OTP first
+                const otpRes = await fetch('http://localhost:3000/api/otp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+
+                const otpData = await otpRes.json();
+
+                if (otpRes.ok) {
+                    window.location.href = 'verify.html';
+                } else {
+                    alert(otpData.error || 'Failed to send OTP');
+                }
+            
+                if (!firstName || !lastName || !phone || !pin || !confirmPin) {
+                    alert('Please fill in all fields.'); return;
+                }
+                if (!/^\d{6}$/.test(pin)) {
+                    alert('PIN must be exactly 6 digits.'); return;
+                }
+                if (pin !== confirmPin) {
+                    alert('PINs do not match.'); return;
+                }
+            
+                try {
+                    const response = await fetch('http://localhost:3000/api/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            name: firstName + ' ' + lastName, 
+                            phone, 
+                            pin 
+                        })
+                    });
+            
+                    const data = await response.json();
+            
+                    if (response.ok) {
+                        alert('Account created successfully!');
+                        window.location.href = 'index.html';
+                    } else {
+                        alert(data.error || 'Registration failed');
+                    }
+            
+                } catch (err) {
+                    alert('Cannot connect to server. Make sure the server is running.');
+                }
+            }">Sign In</button>
         </div>
 
         <div class="footer-text">
@@ -290,6 +343,38 @@
             // Redirect to dashboard
             window.location.href = 'dashboard.html';
         }
+    </script>
+    <script>
+        document.querySelector('.signin-btn').addEventListener('click', async () => {
+            const phone = document.getElementById('phone').value.trim();
+            const pin = document.getElementById('pin').value.trim();
+    
+            if (!phone || !pin) {
+                alert('Please enter your phone number and PIN');
+                return;
+            }
+    
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, pin })
+                });
+    
+                const data = await response.json();
+    
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert(data.error || 'Login failed');
+                }
+    
+            } catch (err) {
+                alert('Cannot connect to server. Make sure the server is running.');
+            }
+        });
     </script>
 </body>
 </html>
