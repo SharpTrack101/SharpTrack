@@ -10,6 +10,12 @@ app.use(express.json());
 const authRoutes = require('./auth');
 app.use('/api/auth', authRoutes);
 
+const productRoutes = require('./products');
+app.use('/api/products', productRoutes);
+
+const salesRoutes = require('./sales');
+app.use('/api/sales', salesRoutes);
+
 const otpRoutes = require('./otp');
 app.use('/api/otp', otpRoutes);
 

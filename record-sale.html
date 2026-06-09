@@ -663,11 +663,7 @@
         const cart = {};
 
         const products = {
-            1: { name: 'Indomie Chicken 70g', price: 600 },
-            2: { name: 'Peak Milk (Tin)', price: 1750 },
-            3: { name: 'Omo Detergent 1kg', price: 2800 },
-            4: { name: 'Milo (Tin)', price: 1900 },
-            5: { name: 'Golden Penny Rice 5kg', price: 4500 }
+           
         };
 
         function changeQty(id, delta) {
@@ -748,17 +744,90 @@
             document.getElementById('cartSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function recordSale() {
+                async function recordSale() {
             const ids = Object.keys(cart);
             if (ids.length === 0) return;
-            alert('Sale recorded successfully!');
-            ids.forEach(id => {
-                cart[id] = 0;
-                delete cart[id];
-                document.getElementById('qty-' + id).textContent = '0';
-            });
-            updateCart();
+
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'index.html'; return; }
+
+            try {
+                for (const id of ids) {
+                    const response = await fetch('http://localhost:3000/api/sales', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            productId: id,
+                            quantitySold: cart[id],
+                            paymentMethod: 'cash'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+                }
+
+                alert('Sale recorded successfully!');
+                ids.forEach(id => {
+                    delete cart[id];
+                    document.getElementById('qty-' + id).textContent = '0';
+                });
+                updateCart();
+
+            } catch (err) {
+                alert('Cannot connect to server. Make sure the server is running.');
+            }
         }
+
+                    async function loadProducts() {
+                const token = localStorage.getItem('token');
+                if (!token) { window.location.href = 'index.html'; return; }
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/products', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    const data = await response.json();
+                    const productList = document.getElementById('productList');
+                    productList.innerHTML = '';
+
+                    if (data.products.length === 0) {
+                        productList.innerHTML = '<p style="text-align:center; color:var(--muted); padding:20px;">No products yet. Add stock first.</p>';
+                        return;
+                    }
+
+                    data.products.forEach((p, index) => {
+                        products[p.id] = { name: p.name, price: p.sellingPrice };
+                        productList.innerHTML += `
+                            <div class="product-item" data-id="${p.id}" data-name="${p.name}" data-price="${p.sellingPrice}" data-category="general">
+                                <div class="product-img">📦</div>
+                                <div class="product-info">
+                                    <div class="name">${p.name}</div>
+                                    <div class="stock">In stock: ${p.quantity} ${p.unit}</div>
+                                </div>
+                                <div class="product-price">₦${p.sellingPrice.toLocaleString()}.00</div>
+                                <div class="qty-control">
+                                    <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
+                                    <span class="qty-num" id="qty-${p.id}">0</span>
+                                    <button class="qty-btn" onclick="changeQty('${p.id}', 1)">+</button>
+                                </div>
+                            </div>`;
+                    });
+
+                } catch (err) {
+                    alert('Cannot connect to server.');
+                }
+            }
+
+            // Load products when page opens
+            loadProducts();
     </script>
 
 </body>

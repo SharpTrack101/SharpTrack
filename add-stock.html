@@ -617,7 +617,8 @@
             document.getElementById('photoInput').click();
         }
 
-        function saveToInventory() {
+       
+                async function saveToInventory() {
             const rows = document.querySelectorAll('.item-row');
             let valid = true;
             rows.forEach(row => {
@@ -625,8 +626,46 @@
                 if (!inputs[0].value || !inputs[1].value || !inputs[2].value) valid = false;
             });
             if (!valid) { alert('Please fill in all item details.'); return; }
-            alert('Stock saved to inventory!');
-            window.location.href = 'dashboard.html';
+
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'index.html'; return; }
+
+            const products = [];
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                products.push({
+                    name: inputs[0].value.trim(),
+                    sellingPrice: parseFloat(inputs[1].value),
+                    quantity: parseInt(inputs[2].value),
+                    reorderLevel: 5,
+                    unit: 'pieces'
+                });
+            });
+
+            try {
+                for (const product of products) {
+                    const response = await fetch('http://localhost:3000/api/products', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(product)
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+                }
+
+                alert('Stock saved to inventory!');
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                alert('Cannot connect to server. Make sure the server is running.');
+            }
         }
     </script>
 
