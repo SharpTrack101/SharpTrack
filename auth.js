@@ -11,6 +11,7 @@ const { otpStore } = require('./store');
 // REGISTER
 router.post('/register', async (req, res) => {
     const { name, phone, pin } = req.body;
+    console.log('Register attempt:', name, phone, pin);
 
     if (!name || !phone || !pin) {
         return res.status(400).json({ error: 'All fields are required' });
