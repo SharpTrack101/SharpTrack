@@ -8,13 +8,21 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  phone     String    @unique
-  password  String
-  products  Product[]
-  sales     Sale[]
-  createdAt DateTime  @default(now())
+  id                   String         @id @default(cuid())
+  name                 String
+  phone                String         @unique
+  password             String
+  email                String?
+  storeName            String?
+  profilePhoto         String?
+  onboardingCompleted  Boolean        @default(false)
+  darkMode             Boolean        @default(false)
+  products             Product[]
+  sales                Sale[]
+  notifications        Notification[]
+  activityLogs         ActivityLog[]
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @default(now()) @updatedAt
 }
 
 model Product {
@@ -40,4 +48,24 @@ model Sale {
   userId        String
   user          User     @relation(fields: [userId], references: [id])
   soldAt        DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   @default("info")
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
 }

@@ -3,513 +3,308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Phone - SharpTrack</title>
+<title>Verify Phone — SharpTrack</title>
+<meta name="description" content="Verify your phone number to complete your SharpTrack account setup.">
+<link rel="stylesheet" href="css/design-system.css">
 <style>
-  :root {
-    --bg: #f0ebe0;
-    --primary: #0a4d33;
-    --primary-light: #e8f0ec;
-    --card: #ffffff;
-    --text: #1a1a1a;
-    --muted: #6b7280;
-    --border: #e5e5e5;
-    --input-bg: #f5f5f5;
-    --accent: #25a244;
-  }
+    body { padding: 0; display: flex; flex-direction: column; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px 12px;
+    }
 
-  body {
-    background: var(--bg);
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-  }
+    .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--primary);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        background: none;
+        border: none;
+    }
+    .back-btn svg { width: 18px; height: 18px; }
 
-  /* Top bar */
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px 12px;
-  }
+    .verify-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        margin: 8px 16px 24px;
+        padding: 36px 24px 32px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
-  .back-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--primary);
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    background: none;
-    border: none;
-  }
+    .shield-wrap {
+        width: 72px; height: 72px;
+        background: var(--primary-light);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 24px;
+    }
+    .shield-wrap svg { width: 36px; height: 36px; color: var(--primary); }
 
-  .back-btn svg { width: 18px; height: 18px; }
+    .verify-card h1 { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 10px; }
+    .verify-card .subtitle { font-size: 14px; color: var(--muted); text-align: center; line-height: 1.5; margin-bottom: 18px; }
 
-  .notif-btn {
-    position: relative;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--primary);
-  }
+    .phone-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--primary-light);
+        border-radius: var(--radius-md);
+        padding: 12px 20px;
+        margin-bottom: 28px;
+    }
+    .phone-display svg { width: 20px; height: 20px; color: var(--primary); flex-shrink: 0; }
+    .phone-display span { font-size: 16px; font-weight: 600; color: var(--primary); letter-spacing: 0.5px; }
 
-  .notif-btn svg { width: 26px; height: 26px; }
+    .divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 24px; }
 
-  .notif-badge {
-    position: absolute;
-    top: -4px; right: -4px;
-    background: var(--primary);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-  }
+    .otp-label { font-size: 15px; font-weight: 700; align-self: flex-start; margin-bottom: 16px; }
 
-  /* Card */
-  .card {
-    background: var(--card);
-    border-radius: 24px;
-    margin: 8px 16px 24px;
-    padding: 36px 24px 32px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+    .otp-inputs { display: flex; gap: 10px; margin-bottom: 24px; }
 
-  /* Shield icon */
-  .shield-wrap {
-    width: 72px; height: 72px;
-    background: var(--primary-light);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 24px;
-  }
+    .otp-box {
+        width: 48px; height: 58px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--card-bg);
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary);
+        text-align: center;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        caret-color: var(--primary);
+        font-family: var(--font-family);
+    }
+    .otp-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(10, 77, 51, 0.12); }
+    .otp-box.filled { border-color: var(--primary); }
 
-  .shield-wrap svg { width: 36px; height: 36px; color: var(--primary); }
+    .resend-wrap {
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        margin-bottom: 24px;
+    }
+    .resend-top { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+    .resend-top svg { width: 15px; height: 15px; }
 
-  /* Heading */
-  .card h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 10px;
-  }
+    .resend-link {
+        font-size: 14px; font-weight: 600; color: var(--primary);
+        cursor: pointer; background: none; border: none; font-family: var(--font-family);
+    }
+    .resend-link:disabled { cursor: default; opacity: 0.6; }
+    .resend-link .countdown { color: var(--green); }
 
-  .card p {
-    font-size: 14px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.5;
-    margin-bottom: 18px;
-  }
+    .error-msg { font-size: 13px; color: var(--red); text-align: center; margin-bottom: 16px; display: none; }
 
-  /* Phone display */
-  .phone-display {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--input-bg);
-    border-radius: 12px;
-    padding: 12px 20px;
-    margin-bottom: 32px;
-  }
-
-  .phone-display svg { width: 20px; height: 20px; color: var(--primary); flex-shrink: 0; }
-
-  .phone-display span {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--primary);
-    letter-spacing: 0.5px;
-  }
-
-  /* Divider */
-  .divider {
-    width: 100%;
-    height: 1px;
-    background: var(--border);
-    margin-bottom: 28px;
-  }
-
-  /* OTP section */
-  .otp-label {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    align-self: flex-start;
-    margin-bottom: 16px;
-  }
-
-  .otp-inputs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 28px;
-  }
-
-  .otp-box {
-    width: 48px; height: 60px;
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    background: var(--input-bg);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--primary);
-    text-align: center;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    caret-color: var(--primary);
-  }
-
-  .otp-box:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(10, 77, 51, 0.12);
-    background: #fff;
-  }
-
-  .otp-box.filled {
-    border-color: var(--primary);
-    background: #fff;
-  }
-
-  /* Lower divider */
-  .divider2 {
-    width: 100%;
-    height: 1px;
-    background: var(--border);
-    margin-bottom: 24px;
-  }
-
-  /* Resend */
-  .resend-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 28px;
-  }
-
-  .resend-wrap .resend-top {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-
-  .resend-wrap .resend-top svg { width: 15px; height: 15px; }
-
-  .resend-link {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary);
-    cursor: pointer;
-    background: none;
-    border: none;
-  }
-
-  .resend-link .countdown { color: var(--accent); }
-
-  .resend-link:disabled { cursor: default; opacity: 0.7; }
-
-  /* Verify button */
-  .verify-btn {
-    width: 100%;
-    padding: 16px;
-    background: var(--primary);
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    margin-bottom: 20px;
-    letter-spacing: 0.3px;
-  }
-
-  .verify-btn:active { transform: scale(0.98); }
-  .verify-btn:hover { background: #0d6040; }
-  .verify-btn:disabled { background: #a0b5ac; cursor: not-allowed; }
-
-  /* Back to login */
-  .back-login {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary);
-    cursor: pointer;
-    background: none;
-    border: none;
-    text-decoration: none;
-  }
-
-  /* Error message */
-  .error-msg {
-    font-size: 13px;
-    color: #dc2626;
-    text-align: center;
-    margin-top: -20px;
-    margin-bottom: 16px;
-    display: none;
-  }
-
-  /* Loading state */
-  .verify-btn.loading {
-    background: #0d6040;
-    pointer-events: none;
-  }
+    .back-login {
+        font-size: 14px; font-weight: 600; color: var(--primary);
+        text-decoration: none; margin-top: 8px;
+    }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <button class="back-btn" onclick="history.back()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M19 12H5M12 5l-7 7 7 7"/>
-    </svg>
-    Back
-  </button>
-  <button class="notif-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-    </svg>
-    <span class="notif-badge">3</span>
-  </button>
-</div>
-
-<div class="card">
-  <div class="shield-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      <polyline points="9 12 11 14 15 10"/>
-    </svg>
-  </div>
-
-  <h1>Verify Your Phone Number</h1>
-  <p>We've sent a 6-digit verification code to</p>
-
-  <div class="phone-display">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.17a16 16 0 0 0 6.29 6.29l.95-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-    </svg>
-    <span id="phone-display">+234 801 234 5678</span>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="otp-label">Enter OTP</div>
-
-  <div class="otp-inputs" id="otp-inputs">
-    <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-0">
-    <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-1">
-    <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-2">
-    <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-3">
-    <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-4">
-    <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-5">
-  </div>
-
-  <div class="error-msg" id="error-msg">Invalid OTP. Please try again.</div>
-
-  <div class="divider2"></div>
-
-  <div class="resend-wrap">
-    <div class="resend-top">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-      Didn't receive the code?
-    </div>
-    <button class="resend-link" id="resend-btn" disabled>
-      Resend OTP in <span class="countdown" id="countdown">25s</span>
+    <button class="back-btn" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back
     </button>
-  </div>
-
-  <button class="verify-btn" id="verify-btn" onclick="verifyOTP()">Verify &amp; Continue</button>
-
-  <a href="index.html" class="back-login">Back to Login</a>
 </div>
 
+<div class="verify-card">
+    <div class="shield-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+    </div>
+
+    <h1>Verify Your Phone</h1>
+    <p class="subtitle">We've sent a 6-digit verification code to</p>
+
+    <div class="phone-display">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.17a16 16 0 0 0 6.29 6.29l.95-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span id="phone-display">+234 XXX XXXX</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="otp-label">Enter OTP</div>
+
+    <div class="otp-inputs" id="otp-inputs">
+        <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-0">
+        <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-1">
+        <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-2">
+        <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-3">
+        <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-4">
+        <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-5">
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="divider"></div>
+
+    <div class="resend-wrap">
+        <div class="resend-top">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Didn't receive the code?
+        </div>
+        <button class="resend-link" id="resend-btn" disabled>
+            Resend OTP in <span class="countdown" id="countdown">25s</span>
+        </button>
+    </div>
+
+    <button class="btn btn-primary btn-block btn-lg" id="verify-btn" onclick="verifyOTP()">Verify & Continue</button>
+
+    <a href="index.html" class="back-login">Back to Sign In</a>
+</div>
+
+<script src="js/app.js"></script>
 <script>
-  // Load pending signup data from localStorage
-  const pendingSignup = JSON.parse(localStorage.getItem('pendingSignup') || '{}');
-  const phone = pendingSignup.phone || '';
+    initTheme();
 
-  // Format and display phone number
-  if (phone) {
-    const formatted = phone.replace(/^0/, '+234 ').replace(/(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3');
-    document.getElementById('phone-display').textContent = '+234 ' + phone.replace(/^0/, '').replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3');
-  }
+    const pendingSignup = JSON.parse(localStorage.getItem('pendingSignup') || '{}');
+    const phone = pendingSignup.phone || '';
 
-  // OTP input auto-advance logic
-  const inputs = document.querySelectorAll('.otp-box');
-
-  inputs.forEach((input, i) => {
-    input.addEventListener('input', (e) => {
-      const val = e.target.value.replace(/\D/g, '');
-      e.target.value = val;
-
-      if (val) {
-        e.target.classList.add('filled');
-        if (i < 5) inputs[i + 1].focus();
-      } else {
-        e.target.classList.remove('filled');
-      }
-    });
-
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && i > 0) {
-        inputs[i - 1].focus();
-        inputs[i - 1].value = '';
-        inputs[i - 1].classList.remove('filled');
-      }
-    });
-
-    // Handle paste
-    input.addEventListener('paste', (e) => {
-      e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
-      text.split('').forEach((char, idx) => {
-        if (inputs[idx]) {
-          inputs[idx].value = char;
-          inputs[idx].classList.add('filled');
-        }
-      });
-      if (inputs[Math.min(text.length, 5)]) inputs[Math.min(text.length, 5)].focus();
-    });
-  });
-
-  // Focus first input on load
-  inputs[0].focus();
-
-  // Countdown timer
-  let timeLeft = 25;
-  const countdownEl = document.getElementById('countdown');
-  const resendBtn = document.getElementById('resend-btn');
-
-  const timer = setInterval(() => {
-    timeLeft--;
-    countdownEl.textContent = timeLeft + 's';
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      resendBtn.disabled = false;
-      resendBtn.innerHTML = 'Resend OTP';
+    // Redirect if no pending signup
+    if (!phone) {
+        window.location.href = 'signup.html';
     }
-  }, 1000);
 
-  // Resend OTP
-  resendBtn.addEventListener('click', async () => {
-    if (resendBtn.disabled) return;
-    resendBtn.disabled = true;
-    resendBtn.textContent = 'Sending...';
+    // Format phone display
+    if (phone) {
+        const digits = phone.replace(/^0/, '');
+        document.getElementById('phone-display').textContent = '+234 ' + digits.replace(/(\d{3})(\d{4})(\d+)/, '$1 $2 $3');
+    }
 
-    try {
-      const res = await fetch('https://sharptrack-api.onrender.com/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        timeLeft = 30;
-        resendBtn.innerHTML = 'Resend OTP in <span class="countdown" id="countdown">30s</span>';
-        const newCountdown = document.getElementById('countdown');
-        const newTimer = setInterval(() => {
-          timeLeft--;
-          newCountdown.textContent = timeLeft + 's';
-          if (timeLeft <= 0) {
-            clearInterval(newTimer);
+    // OTP input logic
+    const inputs = document.querySelectorAll('.otp-box');
+    inputs.forEach((input, i) => {
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.replace(/\D/g, '');
+            e.target.value = val;
+            if (val) {
+                e.target.classList.add('filled');
+                if (i < 5) inputs[i + 1].focus();
+            } else {
+                e.target.classList.remove('filled');
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                inputs[i - 1].focus();
+                inputs[i - 1].value = '';
+                inputs[i - 1].classList.remove('filled');
+            }
+        });
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+            text.split('').forEach((char, idx) => {
+                if (inputs[idx]) { inputs[idx].value = char; inputs[idx].classList.add('filled'); }
+            });
+            if (inputs[Math.min(text.length, 5)]) inputs[Math.min(text.length, 5)].focus();
+        });
+    });
+    inputs[0].focus();
+
+    // Countdown
+    let timeLeft = 25;
+    const countdownEl = document.getElementById('countdown');
+    const resendBtn = document.getElementById('resend-btn');
+
+    function startCountdown(seconds) {
+        timeLeft = seconds;
+        resendBtn.disabled = true;
+        resendBtn.innerHTML = 'Resend OTP in <span class="countdown" id="countdown">' + timeLeft + 's</span>';
+        const timer = setInterval(() => {
+            timeLeft--;
+            const cd = document.getElementById('countdown');
+            if (cd) cd.textContent = timeLeft + 's';
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend OTP';
+            }
+        }, 1000);
+    }
+    startCountdown(25);
+
+    // Resend
+    resendBtn.addEventListener('click', async () => {
+        if (resendBtn.disabled) return;
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Sending...';
+        try {
+            await apiRequest('/api/otp/send', {
+                method: 'POST',
+                body: JSON.stringify({ phone })
+            });
+            showToast('success', 'Code Sent', 'A new verification code has been sent.');
+            startCountdown(30);
+        } catch (err) {
+            showToast('error', 'Failed', err.message);
             resendBtn.disabled = false;
             resendBtn.textContent = 'Resend OTP';
-          }
-        }, 1000);
-      }
-    } catch (e) {
-      resendBtn.disabled = false;
-      resendBtn.textContent = 'Resend OTP';
+        }
+    });
+
+    // Verify
+    async function verifyOTP() {
+        const otp = Array.from(inputs).map(i => i.value).join('');
+        const errorEl = document.getElementById('error-msg');
+        const btn = document.getElementById('verify-btn');
+
+        errorEl.style.display = 'none';
+
+        if (otp.length !== 6) {
+            showToast('warning', 'Incomplete Code', 'Please enter all 6 digits.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Verifying...';
+
+        try {
+            // Step 1: Verify OTP
+            await apiRequest('/api/otp/verify', {
+                method: 'POST',
+                body: JSON.stringify({ phone, otp })
+            });
+
+            // Step 2: Register
+            const registerData = await apiRequest('/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: pendingSignup.name,
+                    phone: pendingSignup.phone,
+                    pin: pendingSignup.pin
+                })
+            });
+
+            // Auto-login: save token and user
+            localStorage.removeItem('pendingSignup');
+            setAuth(registerData.token, registerData.user);
+
+            showToast('success', 'Account Created! 🎉', 'Welcome to SharpTrack!');
+
+            setTimeout(() => {
+                window.location.href = 'onboarding.html';
+            }, 1000);
+
+        } catch (err) {
+            showToast('error', 'Verification Failed', err.message);
+            btn.innerHTML = 'Verify & Continue';
+            btn.disabled = false;
+            inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+            inputs[0].focus();
+        }
     }
-  });
-
-  // Verify OTP
-  async function verifyOTP() {
-    const otp = Array.from(inputs).map(i => i.value).join('');
-    const errorEl = document.getElementById('error-msg');
-    const btn = document.getElementById('verify-btn');
-
-    errorEl.style.display = 'none';
-
-    if (otp.length !== 6) {
-      errorEl.textContent = 'Please enter all 6 digits.';
-      errorEl.style.display = 'block';
-      return;
-    }
-
-    btn.textContent = 'Verifying...';
-    btn.disabled = true;
-
-    try {
-      // Step 1: Verify OTP
-      const verifyRes = await fetch('https://sharptrack-api.onrender.com/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp })
-      });
-
-      const verifyData = await verifyRes.json();
-
-      if (!verifyRes.ok) {
-        errorEl.textContent = verifyData.error || 'Invalid OTP. Try again.';
-        errorEl.style.display = 'block';
-        btn.textContent = 'Verify & Continue';
-        btn.disabled = false;
-        inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
-        inputs[0].focus();
-        return;
-      }
-
-      // Step 2: Register the user
-      const registerRes = await fetch('https://sharptrack-api.onrender.com/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: pendingSignup.name,
-          phone: pendingSignup.phone,
-          pin: pendingSignup.pin
-        })
-      });
-
-      const registerData = await registerRes.json();
-
-      if (!registerRes.ok) {
-        errorEl.textContent = registerData.error || 'Registration failed.';
-        errorEl.style.display = 'block';
-        btn.textContent = 'Verify & Continue';
-        btn.disabled = false;
-        return;
-      }
-
-      // Success — clear pending data and go to login
-      localStorage.removeItem('pendingSignup');
-      alert('Account created! Please sign in.');
-      window.location.href = 'index.html';
-
-    } catch (e) {
-      errorEl.textContent = 'Cannot connect to server. Is it running?';
-      errorEl.style.display = 'block';
-      btn.textContent = 'Verify & Continue';
-      btn.disabled = false;
-    }
-  }
 </script>
 </body>
 </html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SharpTrack</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <style>
+        body { padding: 0; overflow: hidden; }
+
+        .onboarding { display: flex; flex-direction: column; height: 100vh; background: var(--bg); }
+
+        .progress-bar {
+            height: 4px; background: var(--border); position: relative; flex-shrink: 0;
+        }
+        .progress-fill {
+            height: 100%; background: var(--primary); transition: width 0.4s ease;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .skip-bar {
+            display: flex; justify-content: flex-end; padding: 12px 20px 0; flex-shrink: 0;
+        }
+        .skip-btn {
+            font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;
+            background: none; border: none; font-family: var(--font-family);
+            padding: 6px 12px; border-radius: 8px;
+        }
+        .skip-btn:hover { color: var(--primary); background: var(--primary-ghost); }
+
+        .slides { flex: 1; overflow: hidden; position: relative; }
+        .slide {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px 32px;
+            text-align: center; transition: transform 0.45s ease, opacity 0.45s ease;
+            opacity: 0; transform: translateX(60px);
+        }
+        .slide.active { opacity: 1; transform: translateX(0); }
+        .slide.exit { opacity: 0; transform: translateX(-60px); }
+
+        .slide-icon {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: var(--primary-light); display: flex; align-items: center; justify-content: center;
+            margin-bottom: 32px;
+        }
+        .slide-icon span { font-size: 48px; }
+
+        .slide h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+        .slide p { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 320px; }
+
+        .dots {
+            display: flex; justify-content: center; gap: 8px; margin-top: 24px;
+        }
+        .dot {
+            width: 8px; height: 8px; border-radius: 4px; background: var(--border);
+            transition: all 0.3s;
+        }
+        .dot.active { width: 24px; background: var(--primary); }
+
+        .nav-buttons {
+            display: flex; gap: 12px; padding: 16px 24px 32px; flex-shrink: 0;
+        }
+        .nav-buttons .btn { flex: 1; }
+
+        .final-slide .slide-icon { background: var(--green-bg); }
+    </style>
+</head>
+<body>
+
+<div class="onboarding">
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:12.5%"></div>
+    </div>
+
+    <div class="skip-bar">
+        <button class="skip-btn" id="skipBtn" onclick="finishOnboarding()">Skip</button>
+    </div>
+
+    <div class="slides" id="slides">
+        <!-- Slide 0 -->
+        <div class="slide active" data-index="0">
+            <div class="slide-icon"><span>🎉</span></div>
+            <h2>Welcome to SharpTrack!</h2>
+            <p>Your all-in-one business companion for tracking inventory, recording sales, and staying on top of your business.</p>
+        </div>
+        <!-- Slide 1 -->
+        <div class="slide" data-index="1">
+            <div class="slide-icon"><span>📊</span></div>
+            <h2>Your Dashboard</h2>
+            <p>See your daily sales, low stock alerts, and recent activity at a glance. Everything you need, right on your home screen.</p>
+        </div>
+        <!-- Slide 2 -->
+        <div class="slide" data-index="2">
+            <div class="slide-icon"><span>📦</span></div>
+            <h2>Manage Inventory</h2>
+            <p>Add products, track stock levels, and get alerts when you're running low. Never miss a sale due to empty shelves.</p>
+        </div>
+        <!-- Slide 3 -->
+        <div class="slide" data-index="3">
+            <div class="slide-icon"><span>💰</span></div>
+            <h2>Record Sales</h2>
+            <p>Record sales quickly with just a few taps. SharpTrack automatically updates your inventory in real time.</p>
+        </div>
+        <!-- Slide 4 -->
+        <div class="slide" data-index="4">
+            <div class="slide-icon"><span>🔔</span></div>
+            <h2>Smart Notifications</h2>
+            <p>Get notified about low stock, out-of-stock items, and important business events so you never miss anything.</p>
+        </div>
+        <!-- Slide 5 -->
+        <div class="slide" data-index="5">
+            <div class="slide-icon"><span>👤</span></div>
+            <h2>Your Profile</h2>
+            <p>Customize your profile with your store name, contact info, and appearance preferences including dark mode.</p>
+        </div>
+        <!-- Slide 6 -->
+        <div class="slide" data-index="6">
+            <div class="slide-icon"><span>💡</span></div>
+            <h2>Pro Tips</h2>
+            <p>Set reorder levels for each product so SharpTrack alerts you before you run out. Use the quick actions on your dashboard for faster workflows.</p>
+        </div>
+        <!-- Slide 7 -->
+        <div class="slide final-slide" data-index="7">
+            <div class="slide-icon"><span>🚀</span></div>
+            <h2>You're All Set!</h2>
+            <p>Start by adding your first product to your inventory. SharpTrack will handle the rest. Let's grow your business together!</p>
+        </div>
+    </div>
+
+    <div class="dots" id="dots"></div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-outline" id="prevBtn" onclick="prevSlide()" style="display:none">Back</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextSlide()">Continue</button>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    initTheme();
+    if (!isLoggedIn()) { window.location.href = 'index.html'; }
+
+    const totalSlides = 8;
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('dots');
+
+    // Create dots
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.dataset.index = i;
+        dotsContainer.appendChild(dot);
+    }
+
+    function goToSlide(index) {
+        slides.forEach(s => {
+            const i = parseInt(s.dataset.index);
+            s.classList.remove('active', 'exit');
+            if (i < index) s.classList.add('exit');
+            if (i === index) s.classList.add('active');
+        });
+
+        document.querySelectorAll('.dot').forEach((d, i) => {
+            d.classList.toggle('active', i === index);
+        });
+
+        document.getElementById('progressFill').style.width = ((index + 1) / totalSlides * 100) + '%';
+        document.getElementById('prevBtn').style.display = index > 0 ? '' : 'none';
+
+        if (index === totalSlides - 1) {
+            document.getElementById('nextBtn').textContent = "Let's Go!";
+            document.getElementById('skipBtn').style.display = 'none';
+        } else {
+            document.getElementById('nextBtn').textContent = 'Continue';
+            document.getElementById('skipBtn').style.display = '';
+        }
+
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+            goToSlide(currentSlide + 1);
+        } else {
+            finishOnboarding();
+        }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) goToSlide(currentSlide - 1);
+    }
+
+    async function finishOnboarding() {
+        try {
+            await apiRequest('/api/auth/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ onboardingCompleted: true })
+            });
+            const user = getUser();
+            if (user) {
+                user.onboardingCompleted = true;
+                localStorage.setItem('st_user', JSON.stringify(user));
+            }
+        } catch { /* non-critical */ }
+
+        window.location.href = 'dashboard.html';
+    }
+
+    // Swipe support
+    let touchStartX = 0;
+    document.getElementById('slides').addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+    });
+    document.getElementById('slides').addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) nextSlide();
+            else prevSlide();
+        }
+    });
+</script>
+</body>
+</html>

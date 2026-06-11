@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Support — SharpTrack</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <style>
+        body { padding-bottom: 90px; }
+
+        .back-row { display: flex; align-items: center; padding: 16px 0 8px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 4px; color: var(--primary);
+            font-size: 14px; font-weight: 600; cursor: pointer; background: none; border: none;
+            font-family: var(--font-family);
+        }
+
+        .hero { margin: 8px 0 24px; }
+        .hero h1 { font-size: 24px; margin-bottom: 6px; }
+        .hero p { font-size: 14px; color: var(--muted); }
+
+        .faq-card {
+            background: var(--card-bg); border-radius: var(--radius-lg);
+            margin-bottom: 10px; overflow: hidden;
+        }
+
+        .faq-q {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 16px; cursor: pointer; background: none; border: none;
+            font-size: 14px; font-weight: 600; color: var(--text);
+            font-family: var(--font-family); text-align: left;
+        }
+        .faq-q svg { transition: transform 0.2s; flex-shrink: 0; color: var(--muted); }
+        .faq-q.open svg { transform: rotate(180deg); }
+
+        .faq-a {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+            font-size: 13px; line-height: 1.6; color: var(--muted);
+        }
+        .faq-a-inner { padding: 0 16px 14px; }
+        .faq-a.open { max-height: 200px; }
+
+        .contact-section { margin-top: 24px; }
+        .contact-section h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="content">
+    <div class="back-row">
+        <button class="back-btn" onclick="history.back()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Back
+        </button>
+    </div>
+
+    <div class="hero">
+        <h1>Help & Support</h1>
+        <p>Find answers to common questions about SharpTrack.</p>
+    </div>
+
+    <div id="faq-list">
+        <div class="faq-card">
+            <button class="faq-q" onclick="toggleFaq(this)">How do I add a new product? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="faq-a"><div class="faq-a-inner">Tap the <strong>+</strong> button on the bottom navigation or go to <strong>Add Stock</strong>. Fill in the product name, selling price, quantity, and unit type, then tap "Add Product".</div></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-q" onclick="toggleFaq(this)">How do I record a sale? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="faq-a"><div class="faq-a-inner">Go to the <strong>Sales</strong> tab. Search for the item, tap <strong>+</strong> to add it to your cart, then tap <strong>Record Sale</strong>. Your inventory will be updated automatically.</div></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-q" onclick="toggleFaq(this)">What is the reorder level? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="faq-a"><div class="faq-a-inner">The reorder level is the minimum stock quantity before SharpTrack flags the item as <strong>"Low Stock"</strong>. Set this when adding a product to get timely restocking alerts.</div></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-q" onclick="toggleFaq(this)">How do I change my PIN? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="faq-a"><div class="faq-a-inner">Go to <strong>More → Change PIN</strong>. Enter your current PIN and your new 6-digit PIN, then tap "Update PIN".</div></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-q" onclick="toggleFaq(this)">How do I enable dark mode? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="faq-a"><div class="faq-a-inner">Go to <strong>More → Dark Mode</strong> and toggle the switch. Your preference will be saved and applied across all pages.</div></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-q" onclick="toggleFaq(this)">Can I use SharpTrack offline? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="faq-a"><div class="faq-a-inner">SharpTrack currently requires an internet connection to sync your data. Offline mode is planned for a future update.</div></div>
+        </div>
+    </div>
+
+    <div class="contact-section">
+        <h2>Still need help?</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Our team is here to help you get the most out of SharpTrack.</p>
+        <button class="btn btn-primary btn-block" onclick="showToast('info','Coming Soon','Email support will be available soon.')">Contact Support</button>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    initTheme();
+
+    function toggleFaq(btn) {
+        const answer = btn.nextElementSibling;
+        const isOpen = btn.classList.contains('open');
+
+        // Close all
+        document.querySelectorAll('.faq-q').forEach(q => q.classList.remove('open'));
+        document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+
+        if (!isOpen) {
+            btn.classList.add('open');
+            answer.classList.add('open');
+        }
+    }
+</script>
+</body>
+</html>
