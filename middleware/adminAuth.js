@@ -10,7 +10,7 @@ const parseCookies = (cookieHeader) => {
     return list;
 };
 
-const adminAuth = (req, res, next) => {
+const adminAuth = async (req, res, next) => {
     // Determine if the request expects an API response
     const isApi = req.originalUrl.startsWith('/api/');
 
