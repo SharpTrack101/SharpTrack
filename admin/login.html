@@ -308,10 +308,6 @@
     </div>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? window.location.origin
-            : 'https://sharptrack-api.onrender.com';
-
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
@@ -330,7 +326,7 @@
             btnText.textContent = 'Verifying...';
 
             try {
-                const response = await fetch(`${API_URL}/api/admin/login`, {
+                const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
