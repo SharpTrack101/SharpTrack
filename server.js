@@ -1,9 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
+
+// Trust proxy settings (required for accurate client IP detection behind Netlify/Render proxies)
+app.set('trust proxy', 1);
 
 // Security & parsing middleware
 app.use(cors({
@@ -55,6 +59,18 @@ app.get('/admin/login', (req, res) => {
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
+
+// Admin login rate limiting (max 5 requests per 15 minutes per IP)
+const adminLoginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, 
+    message: { error: 'Too many login attempts from this IP. Please try again in 15 minutes.' },
+    standardHeaders: true, 
+    legacyHeaders: false, 
+});
+
+// Apply rate limiter to admin login endpoint
+app.use('/api/admin/login', adminLoginLimiter);
 
 // API Routes
 const adminRoutes = require('./adminRoutes');
