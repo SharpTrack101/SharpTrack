@@ -1,5 +1,18 @@
 /* SharpTrack Admin Dashboard Core Script */
 
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? window.location.origin
+    : 'https://sharptrack-api.onrender.com';
+
+// Intercept relative fetch calls to point to the correct API host in production
+const originalFetch = window.fetch;
+window.fetch = function(url, options) {
+    if (typeof url === 'string' && url.startsWith('/api/')) {
+        url = `${API_URL}${url}`;
+    }
+    return originalFetch(url, options);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- STATE MANAGEMENT ---
     const state = {
