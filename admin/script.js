@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadAllData() {
         try {
             // Verify authenticated administrator
-            const authRes = await fetch('/api/admin/me');
+            const authRes = await fetch('https://sharptrack-api.onrender.com/api/admin/me');
             if (!authRes.ok) {
                 window.location.href = '/admin/login';
                 return;
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Load users list (All roles can view users)
-            const usersRes = await fetch('/api/admin/users');
+            const usersRes = await fetch('https://sharptrack-api.onrender.com/api/admin/users');
             if (usersRes.ok) {
                 const usersData = await usersRes.json();
                 state.users = usersData.users;
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Load products list (All roles can view products)
-            const productsRes = await fetch('/api/admin/products');
+            const productsRes = await fetch('https://sharptrack-api.onrender.com/api/admin/products');
             if (productsRes.ok) {
                 const productsData = await productsRes.json();
                 state.products = productsData.products;
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load businesses list (SUPER_ADMIN, ADMIN, SUPPORT)
             if (['SUPER_ADMIN', 'ADMIN', 'SUPPORT'].includes(adminRole)) {
-                const businessesRes = await fetch('/api/admin/businesses');
+                const businessesRes = await fetch('https://sharptrack-api.onrender.com/api/admin/businesses');
                 if (businessesRes.ok) {
                     const businessesData = await businessesRes.json();
                     state.businesses = businessesData.businesses;
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Load categories (All roles can view categories)
-            const categoriesRes = await fetch('/api/admin/categories');
+            const categoriesRes = await fetch('https://sharptrack-api.onrender.com/api/admin/categories');
             if (categoriesRes.ok) {
                 const categoriesData = await categoriesRes.json();
                 state.categories = categoriesData.categories;
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load ingestion center pipeline (SUPER_ADMIN, ADMIN, MODERATOR)
             if (['SUPER_ADMIN', 'ADMIN', 'MODERATOR'].includes(adminRole)) {
-                const ingestionRes = await fetch('/api/admin/ingestion');
+                const ingestionRes = await fetch('https://sharptrack-api.onrender.com/api/admin/ingestion');
                 if (ingestionRes.ok) {
                     const ingestionData = await ingestionRes.json();
                     state.ingestion = ingestionData.ingestion;
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load notifications alerts (SUPER_ADMIN, ADMIN, SUPPORT)
             if (['SUPER_ADMIN', 'ADMIN', 'SUPPORT'].includes(adminRole)) {
-                const notificationsRes = await fetch('/api/admin/notifications');
+                const notificationsRes = await fetch('https://sharptrack-api.onrender.com/api/admin/notifications');
                 if (notificationsRes.ok) {
                     const notificationsData = await notificationsRes.json();
                     state.notifications = notificationsData.notifications;
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load activity feed (SUPER_ADMIN, ADMIN)
             if (['SUPER_ADMIN', 'ADMIN'].includes(adminRole)) {
-                const activityRes = await fetch('/api/admin/activity');
+                const activityRes = await fetch('https://sharptrack-api.onrender.com/api/admin/activity');
                 if (activityRes.ok) {
                     const activityData = await activityRes.json();
                     state.auditLogs = activityData.activityLogs;
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadStatsSummary() {
         try {
-            const statsRes = await fetch('/api/admin/stats');
+            const statsRes = await fetch('https://sharptrack-api.onrender.com/api/admin/stats');
             if (!statsRes.ok) throw new Error('Failed to load stats');
             const stats = await statsRes.json();
 
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadAdmins() {
         if (state.currentAdminRole !== 'SUPER_ADMIN') return;
         try {
-            const res = await fetch('/api/admin/admins');
+            const res = await fetch('https://sharptrack-api.onrender.com/api/admin/admins');
             if (!res.ok) throw new Error('Failed to load administrators');
             const data = await res.json();
             state.admins = data.admins;
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
                 try {
-                    const res = await fetch(`/api/admin/admins/${id}/toggle-status`, {
+                    const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/admins/${id}/toggle-status`, {
                         method: 'POST'
                     });
                     if (!res.ok) {
@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (id) {
                 // Update Admin
-                const res = await fetch(`/api/admin/admins/${id}`, {
+                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/admins/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, role })
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!password) {
                     throw new Error('Password is required for new administrator accounts.');
                 }
-                const res = await fetch('/api/admin/admins', {
+                const res = await fetch('https://sharptrack-api.onrender.com/api/admin/admins', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, role })
@@ -528,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             li.addEventListener('click', async () => {
                 try {
-                    await fetch('/api/admin/notifications/mark-read', {
+                    await fetch('https://sharptrack-api.onrender.com/api/admin/notifications/mark-read', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: n.id })
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('mark-all-read').addEventListener('click', async (e) => {
         e.stopPropagation();
         try {
-            await fetch('/api/admin/notifications/mark-read', {
+            await fetch('https://sharptrack-api.onrender.com/api/admin/notifications/mark-read', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const range = parseInt(state.chartDataRange);
             let trend = [];
             try {
-                const res = await fetch(`/api/admin/charts/sales-trend?range=${range}`);
+                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/charts/sales-trend?range=${range}`);
                 const data = await res.json();
                 trend = data.trend;
             } catch (err) {
@@ -710,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (revenueContainer) {
             let trend = [];
             try {
-                const res = await fetch(`/api/admin/charts/sales-trend?range=30`);
+                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/charts/sales-trend?range=30`);
                 const data = await res.json();
                 trend = data.trend;
             } catch (err) {
@@ -940,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     newConfirmBtn.addEventListener('click', async () => {
                         try {
-                            const res = await fetch(`/api/admin/users/${user.id}/suspend`, { method: 'POST' });
+                            const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/users/${user.id}/suspend`, { method: 'POST' });
                             if (!res.ok) throw new Error('Failed to update status');
                             const data = await res.json();
                             
@@ -981,7 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
                     newConfirm.addEventListener('click', async () => {
                         try {
-                            const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+                            const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/users/${id}`, { method: 'DELETE' });
                             if (!res.ok) throw new Error('Failed to delete account');
                             
                             state.users = state.users.filter(u => u.id !== id);
@@ -1126,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const prod = state.products.find(p => p.id === id);
                 if (prod) {
                     if (confirm(`Are you sure you want to remove "${prod.name}" from the global product scan directory?`)) {
-                        fetch(`/api/admin/products/${id}`, { method: 'DELETE' })
+                        fetch(`https://sharptrack-api.onrender.com/api/admin/products/${id}`, { method: 'DELETE' })
                             .then(res => {
                                 if (!res.ok) throw new Error('Failed to delete product');
                                 return res.json();
@@ -1158,7 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (id) {
                 // Update product
-                const res = await fetch(`/api/admin/products/${id}`, {
+                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/products/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bodyData)
@@ -1167,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('success', 'Catalog Updated', 'Global catalog listing successfully modified.');
             } else {
                 // Add product
-                const res = await fetch('/api/admin/products', {
+                const res = await fetch('https://sharptrack-api.onrender.com/api/admin/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bodyData)
@@ -1395,7 +1395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        const res = await fetch(`/api/admin/ingestion/${id}/approve`, { method: 'POST' });
+                        const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/ingestion/${id}/approve`, { method: 'POST' });
                         if (!res.ok) throw new Error('Approval request failed');
                         showToast('success', 'Approved', 'Catalog entry verified and saved to database.');
                         loadAllData();
@@ -1410,7 +1410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        const res = await fetch(`/api/admin/ingestion/${id}/dismiss`, { method: 'POST' });
+                        const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/ingestion/${id}/dismiss`, { method: 'POST' });
                         if (!res.ok) throw new Error('Dismissal request failed');
                         showToast('info', 'Dismissed', 'Scraper entry rejected.');
                         loadAllData();
@@ -1490,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        const res = await fetch(`/api/admin/ingestion/${id}/dismiss`, { method: 'POST' });
+                        const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/ingestion/${id}/dismiss`, { method: 'POST' });
                         if (!res.ok) throw new Error('Merge resolution failed');
                         showToast('success', 'Resolved', 'Merged duplication markers.');
                         loadAllData();
@@ -1552,7 +1552,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     try {
-                        const res = await fetch(`/api/admin/ingestion/${id}/retry`, {
+                        const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/ingestion/${id}/retry`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ barcode })
@@ -1589,7 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('admin-email').value.trim();
         
         try {
-            const res = await fetch('/api/admin/profile', {
+            const res = await fetch('https://sharptrack-api.onrender.com/api/admin/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email })
@@ -1635,7 +1635,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cat = state.categories[index];
                 if (confirm(`Do you want to delete category "${cat}"? Products under this category will remain, but category tags filters will lose references.`)) {
                     try {
-                        const res = await fetch(`/api/admin/categories/${encodeURIComponent(cat)}`, {
+                        const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/categories/${encodeURIComponent(cat)}`, {
                             method: 'DELETE'
                         });
                         if (!res.ok) throw new Error('Deletion failed');
@@ -1656,7 +1656,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (name && name.trim()) {
                 const catName = name.trim();
                 try {
-                    const res = await fetch('/api/admin/categories', {
+                    const res = await fetch('https://sharptrack-api.onrender.com/api/admin/categories', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: catName })
@@ -1709,7 +1709,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm('Are you sure you want to end the Super Admin session?')) {
             showToast('info', 'Logging out...', 'Ending secure admin token session...');
             try {
-                await fetch('/api/admin/logout', { method: 'POST' });
+                await fetch('https://sharptrack-api.onrender.com/api/admin/logout', { method: 'POST' });
                 setTimeout(() => {
                     window.location.href = '/admin/login';
                 }, 500);

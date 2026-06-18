@@ -94,6 +94,9 @@ app.use('/api/notifications', notificationRoutes);
 const activityRoutes = require('./activity');
 app.use('/api/activity', activityRoutes);
 
+const aiRoutes = require('./aiRoutes');
+app.use('/api/ai', aiRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'SharpTrack API is running', timestamp: new Date().toISOString() });

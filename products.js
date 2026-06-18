@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 // ADD PRODUCT
 router.post('/', authMiddleware, async (req, res) => {
-    const { name, sellingPrice, quantity, reorderLevel, unit } = req.body;
+    const { name, sellingPrice, quantity, reorderLevel, unit, brand, weight, barcode, description, categoryId, categoryName, image } = req.body;
 
     if (!name || sellingPrice === undefined || quantity === undefined) {
         return res.status(400).json({ error: 'Name, price and quantity are required' });
@@ -22,16 +22,31 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     try {
-        const product = await prisma.product.create({
-            data: {
-                name: name.trim(),
-                sellingPrice: parseFloat(sellingPrice),
-                quantity: parseInt(quantity),
-                reorderLevel: parseInt(reorderLevel) || 5,
-                unit: unit || 'pieces',
-                userId: req.userId
+        let finalCategoryId = categoryId || null;
+        if (categoryName && !finalCategoryId) {
+            let cat = await prisma.category.findUnique({ where: { name: categoryName } });
+            if (!cat) {
+                cat = await prisma.category.create({ data: { name: categoryName } });
             }
-        });
+            finalCategoryId = cat.id;
+        }
+
+        const data = {
+            name: name.trim(),
+            sellingPrice: parseFloat(sellingPrice),
+            quantity: parseInt(quantity),
+            reorderLevel: parseInt(reorderLevel) || 5,
+            unit: unit || 'pieces',
+            userId: req.userId,
+            brand: brand || null,
+            weight: weight || null,
+            barcode: barcode || null,
+            description: description || null,
+            categoryId: finalCategoryId,
+            image: image || null
+        };
+
+        const product = await prisma.product.create({ data });
         res.status(201).json({ message: 'Product added', product });
     } catch (err) {
         console.error('Add product error:', err.message);
@@ -80,7 +95,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
 
 // UPDATE PRODUCT
 router.put('/:id', authMiddleware, async (req, res) => {
-    const { name, sellingPrice, quantity, reorderLevel, unit } = req.body;
+    const { name, sellingPrice, quantity, reorderLevel, unit, brand, weight, barcode, description, categoryId, image } = req.body;
 
     try {
         // Verify ownership
@@ -96,7 +111,13 @@ router.put('/:id', authMiddleware, async (req, res) => {
                 sellingPrice: sellingPrice !== undefined ? parseFloat(sellingPrice) : existing.sellingPrice, 
                 quantity: quantity !== undefined ? parseInt(quantity) : existing.quantity, 
                 reorderLevel: reorderLevel !== undefined ? parseInt(reorderLevel) : existing.reorderLevel, 
-                unit: unit || existing.unit 
+                unit: unit || existing.unit,
+                brand: brand !== undefined ? brand : existing.brand,
+                weight: weight !== undefined ? weight : existing.weight,
+                barcode: barcode !== undefined ? barcode : existing.barcode,
+                description: description !== undefined ? description : existing.description,
+                categoryId: categoryId !== undefined ? categoryId : existing.categoryId,
+                image: image !== undefined ? image : existing.image
             }
         });
         res.json({ message: 'Product updated', product });
