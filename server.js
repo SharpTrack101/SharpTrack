@@ -19,38 +19,9 @@ app.use(express.json({ limit: '10mb' }));
 
 const jwt = require('jsonwebtoken');
 
-// Protect admin static pages
-app.use('/admin', (req, res, next) => {
-    // Allow login, style assets and logo image requests to bypass
-    if (req.path === '/login' || req.path === '/login.html' || req.path.includes('style.css') || req.path.includes('logo') || req.path.includes('logo2.png') || req.path.includes('logo3.png')) {
-        return next();
-    }
-
-    const cookies = {};
-    if (req.headers.cookie) {
-        req.headers.cookie.split(';').forEach(c => {
-            const parts = c.split('=');
-            cookies[parts[0].trim()] = decodeURIComponent((parts[1] || '').trim());
-        });
-    }
-    const token = cookies.admin_token;
-
-    if (!token) {
-        return res.redirect('/admin/login');
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!['SUPER_ADMIN', 'ADMIN', 'SUPPORT', 'MODERATOR'].includes(decoded.role)) {
-            res.clearCookie('admin_token');
-            return res.redirect('/admin/login');
-        }
-        next();
-    } catch (err) {
-        res.clearCookie('admin_token');
-        return res.redirect('/admin/login');
-    }
-});
+// Admin static pages: Authentication is handled client-side by script.js
+// which calls /api/admin/me on load and redirects to login if unauthorized.
+// All API endpoints are protected by the adminAuth middleware.
 
 // Serve admin login HTML on /admin/login
 app.get('/admin/login', (req, res) => {

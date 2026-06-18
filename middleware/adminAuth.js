@@ -14,8 +14,16 @@ const adminAuth = async (req, res, next) => {
     // Determine if the request expects an API response
     const isApi = req.originalUrl.startsWith('/api/');
 
-    const cookies = parseCookies(req.headers.cookie);
-    const token = cookies.admin_token;
+    // Check Authorization header first (frontend sends token from localStorage)
+    let token = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+    } else {
+        // Fallback to cookie
+        const cookies = parseCookies(req.headers.cookie);
+        token = cookies.admin_token;
+    }
 
     if (!token) {
         if (isApi) {

@@ -1,5 +1,32 @@
 /* SharpTrack Admin Dashboard Core Script */
 
+// --- GLOBAL FETCH INTERCEPTOR: Attaches JWT from localStorage ---
+// Cookies fail cross-origin with fetch(). This ensures every admin API
+// request carries the token via the Authorization header instead.
+const _originalFetch = window.fetch;
+window.fetch = async function(resource, config) {
+    const token = localStorage.getItem('admin_token');
+
+    if (typeof resource === 'string' && resource.includes('/api/admin')) {
+        config = config || {};
+        config.headers = config.headers || {};
+        if (token) {
+            config.headers['Authorization'] = 'Bearer ' + token;
+        }
+        config.credentials = 'include'; // still send cookies as a backup
+    }
+
+    const response = await _originalFetch(resource, config);
+
+    // If any admin API call returns 401, session is dead — redirect to login
+    if ((response.status === 401) && typeof resource === 'string' && resource.includes('/api/admin') && !resource.includes('/api/admin/login')) {
+        localStorage.removeItem('admin_token');
+        window.location.href = '/admin/login.html';
+    }
+
+    return response;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- STATE MANAGEMENT ---
     const state = {
@@ -34,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Verify authenticated administrator
             const authRes = await fetch('https://sharptrack-api.onrender.com/api/admin/me');
             if (!authRes.ok) {
-                window.location.href = '/admin/login';
+                window.location.href = '/admin/login.html';
                 return;
             }
             const authData = await authRes.json();
@@ -1710,12 +1737,11 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('info', 'Logging out...', 'Ending secure admin token session...');
             try {
                 await fetch('https://sharptrack-api.onrender.com/api/admin/logout', { method: 'POST' });
-                setTimeout(() => {
-                    window.location.href = '/admin/login';
-                }, 500);
             } catch (err) {
-                window.location.href = '/admin/login';
+                // Ignore network errors on logout
             }
+            localStorage.removeItem('admin_token');
+            window.location.href = '/admin/login.html';
         }
     });
 
