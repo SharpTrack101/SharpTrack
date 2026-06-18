@@ -326,7 +326,11 @@
             btnText.textContent = 'Verifying...';
 
             try {
-                const response = await fetch('https://sharptrack-api.onrender.com/api/admin/login', {
+                const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? ''
+                    : 'https://sharptrack-api.onrender.com';
+
+                const response = await fetch(`${API_URL}/api/admin/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })

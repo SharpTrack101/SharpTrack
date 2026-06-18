@@ -14,8 +14,7 @@ const authMiddleware = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        const { PrismaClient } = require('@prisma/client');
-        const prisma = new PrismaClient();
+        const prisma = require('../lib/prisma');
         const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
 
         if (!user || user.status === 'Suspended') {

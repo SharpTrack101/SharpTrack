@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('./lib/prisma');
 const adminAuth = require('./middleware/adminAuth');
-
-const prisma = new PrismaClient();
 
 // In-memory rate limiting & temporary lockout store
 const loginAttempts = {};

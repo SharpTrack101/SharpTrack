@@ -2,7 +2,9 @@
    SHARPTRACK — SHARED APPLICATION JS
    ============================================ */
 
-const API_URL = 'https://sharptrack-api.onrender.com';
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''
+    : 'https://sharptrack-api.onrender.com';
 
 /* ── AUTH HELPERS ── */
 function getToken() {

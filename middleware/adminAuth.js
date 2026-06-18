@@ -37,8 +37,7 @@ const adminAuth = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Connect to database to check if admin was disabled
-        const { PrismaClient } = require('@prisma/client');
-        const prisma = new PrismaClient();
+        const prisma = require('../lib/prisma');
         const admin = await prisma.admin.findUnique({ where: { id: decoded.id } });
 
         if (!admin || admin.status === 'Disabled' || !['SUPER_ADMIN', 'ADMIN', 'SUPPORT', 'MODERATOR'].includes(admin.role)) {

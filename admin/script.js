@@ -5,6 +5,14 @@
 // request carries the token via the Authorization header instead.
 const _originalFetch = window.fetch;
 window.fetch = async function(resource, config) {
+    // Dynamically rewrite Render URL to local server path on localhost
+    if (typeof resource === 'string' && resource.startsWith('https://sharptrack-api.onrender.com')) {
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? ''
+            : 'https://sharptrack-api.onrender.com';
+        resource = resource.replace('https://sharptrack-api.onrender.com', API_URL);
+    }
+
     const token = localStorage.getItem('admin_token');
 
     if (typeof resource === 'string' && resource.includes('/api/admin')) {

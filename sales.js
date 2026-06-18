@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('./lib/prisma');
 const authMiddleware = require('./middleware/auth');
-
-const prisma = new PrismaClient();
 
 // RECORD A SALE
 router.post('/', authMiddleware, async (req, res) => {
@@ -31,7 +29,9 @@ router.post('/', authMiddleware, async (req, res) => {
                 quantitySold: parseInt(quantitySold),
                 totalAmount,
                 paymentMethod: paymentMethod || 'cash',
-                userId: req.userId
+                userId: req.userId,
+                productName: product.name,
+                unitPrice: product.sellingPrice
             }
         });
 
