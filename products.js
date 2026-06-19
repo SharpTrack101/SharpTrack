@@ -103,6 +103,53 @@ router.get('/categories', authMiddleware, async (req, res) => {
     }
 });
 
+// LOOKUP PRODUCT BY BARCODE
+router.get('/barcode/:code', authMiddleware, async (req, res) => {
+    const { code } = req.params;
+    if (!code) {
+        return res.status(400).json({ error: 'Barcode parameter is required' });
+    }
+
+    try {
+        // Find match in current user's products first
+        let product = await prisma.product.findFirst({
+            where: { barcode: code, userId: req.userId },
+            include: { category: { select: { name: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Fallback to checking products from other users
+        if (!product) {
+            product = await prisma.product.findFirst({
+                where: { barcode: code },
+                include: { category: { select: { name: true } } },
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+
+        if (product) {
+            return res.json({
+                found: true,
+                product: {
+                    name: product.name,
+                    brand: product.brand,
+                    weight: product.weight,
+                    category: product.category ? product.category.name : null,
+                    costPrice: product.costPrice,
+                    sellingPrice: product.sellingPrice,
+                    unit: product.unit,
+                    description: product.description
+                }
+            });
+        }
+
+        return res.json({ found: false });
+    } catch (err) {
+        console.error('Barcode lookup error:', err.message);
+        res.status(500).json({ error: 'Failed to look up barcode locally' });
+    }
+});
+
 // UPDATE PRODUCT
 router.put('/:id', authMiddleware, async (req, res) => {
     const { name, sellingPrice, costPrice, quantity, reorderLevel, unit, brand, weight, barcode, description, categoryId, image } = req.body;

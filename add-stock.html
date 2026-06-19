@@ -688,6 +688,44 @@
             showToast('info', 'Searching Database', 'Looking up product info...');
             
             try {
+                // Tier 1: Query local database first
+                const localRes = await fetch(`${API_BASE}/api/products/barcode/${barcodeValue}`, {
+                    headers: {
+                        ...(getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {})
+                    }
+                });
+                
+                if (localRes.ok) {
+                    const localData = await localRes.json();
+                    if (localData && localData.found) {
+                        const p = localData.product;
+                        if (p.name && !document.getElementById('productName').value) document.getElementById('productName').value = p.name;
+                        if (p.brand && !document.getElementById('brand').value) document.getElementById('brand').value = p.brand;
+                        if (p.weight && !document.getElementById('weight').value) document.getElementById('weight').value = p.weight;
+                        
+                        // Fill category if empty
+                        if (p.category) {
+                            const catField = document.getElementById('categoryName');
+                            if (catField && catField.value.trim() === '') {
+                                selectCategory(p.category);
+                                if (!categoryList.includes(p.category)) {
+                                    categoryList.push(p.category);
+                                    renderCategories(categoryList);
+                                }
+                            }
+                        }
+
+                        // Fill prices and select unit if empty
+                        if (p.costPrice !== null && !document.getElementById('costPrice').value) document.getElementById('costPrice').value = p.costPrice;
+                        if (p.sellingPrice !== null && !document.getElementById('sellingPrice').value) document.getElementById('sellingPrice').value = p.sellingPrice;
+                        if (p.unit) autoSelectUnit(p.unit);
+
+                        showToast('success', 'Found Locally! 📦', 'Product details auto-filled from database.');
+                        return;
+                    }
+                }
+
+                // Tier 2: Fallback to global database
                 const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcodeValue}.json`);
                 const data = await res.json();
                 
@@ -696,11 +734,12 @@
                     if (p.product_name && !document.getElementById('productName').value) document.getElementById('productName').value = p.product_name;
                     if (p.brands && !document.getElementById('brand').value) document.getElementById('brand').value = p.brands.split(',')[0];
                     if (p.quantity && !document.getElementById('weight').value) document.getElementById('weight').value = p.quantity;
-                    showToast('success', 'Found!', 'Product details auto-filled.');
+                    showToast('success', 'Found Globally!', 'Product details auto-filled.');
                 } else {
                     showToast('warning', 'Not Found', 'Barcode recognized but no data found in global database. Try AI Scan.');
                 }
             } catch (err) {
+                console.error("Barcode lookup failed:", err);
                 showToast('error', 'Lookup Failed', 'Could not fetch product data.');
             } finally {
                 lookupBtn.innerText = originalText;
