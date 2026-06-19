@@ -81,7 +81,16 @@ router.get('/', authMiddleware, async (req, res) => {
     try {
         const sales = await prisma.sale.findMany({
             where: { userId: req.userId },
-            include: { product: true },
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        name: true,
+                        sellingPrice: true,
+                        unit: true
+                    }
+                }
+            },
             orderBy: { soldAt: 'desc' }
         });
         res.json({ sales });
@@ -105,7 +114,16 @@ router.get('/today', authMiddleware, async (req, res) => {
     try {
         const sales = await prisma.sale.findMany({
             where: { userId: req.userId, soldAt: { gte: start } },
-            include: { product: true },
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        name: true,
+                        sellingPrice: true,
+                        unit: true
+                    }
+                }
+            },
             orderBy: { soldAt: 'desc' }
         });
 
@@ -139,7 +157,16 @@ router.get('/recent', authMiddleware, async (req, res) => {
     try {
         const sales = await prisma.sale.findMany({
             where: { userId: req.userId },
-            include: { product: true },
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        name: true,
+                        sellingPrice: true,
+                        unit: true
+                    }
+                }
+            },
             orderBy: { soldAt: 'desc' },
             take: 5
         });
@@ -250,7 +277,15 @@ router.get('/top-products', authMiddleware, async (req, res) => {
     try {
         const sales = await prisma.sale.findMany({
             where: { userId: req.userId },
-            include: { product: true }
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        name: true,
+                        unit: true
+                    }
+                }
+            }
         });
 
         const productSales = {};

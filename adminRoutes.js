@@ -351,7 +351,25 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
 router.get('/products', adminAuth, async (req, res) => {
     try {
         const products = await prisma.product.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                name: true,
+                sellingPrice: true,
+                costPrice: true,
+                quantity: true,
+                reorderLevel: true,
+                unit: true,
+                userId: true,
+                barcode: true,
+                brand: true,
+                categoryId: true,
+                specifications: true,
+                weight: true,
+                manufacturer: true,
+                description: true,
+                createdAt: true
+            }
         });
         res.json({ products });
     } catch (err) {
