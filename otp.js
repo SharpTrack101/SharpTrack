@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Store OTPs temporarily in memory
 const { otpStore } = require('./store');
+const { sendSMS } = require('./services/termii');
 
 // SEND OTP
 router.post('/send', async (req, res) => {
@@ -11,16 +12,18 @@ router.post('/send', async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[phone] = { otp, expires: Date.now() + 5 * 60 * 1000 };
-    console.log(`OTP for ${phone}: ${otp}`);
+    console.log(`[OTP Generate] OTP for ${phone}: ${otp}`);
 
     try {
-        // SMS disabled during development - OTP logged to console
-        console.log(`OTP for ${phone}: ${otp}`);
+        // Send OTP using Termii SMS Service
+        const message = `Your SharpTrack verification code is: ${otp}. It expires in 5 minutes.`;
+        await sendSMS(phone, message);
         res.json({ message: 'OTP sent successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to send OTP' });
+        console.error(`[OTP Send Error] Failed to send OTP to ${phone}:`, error.message);
+        res.status(500).json({ error: `Failed to send OTP: ${error.message}` });
     }
-  });
+});
 // VERIFY OTP
 router.post('/verify', async (req, res) => {
     const { phone, otp } = req.body;
