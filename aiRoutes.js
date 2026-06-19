@@ -103,15 +103,16 @@ async function scanProductLogic(req, res) {
         const prompt = `Analyze this product image and return ONLY valid JSON.
 Required fields:
 {
-  "productName": "",
-  "brand": "",
-  "category": "",
-  "description": "",
-  "weight": "",
-  "barcode": "",
-  "confidence": ""
+  "productName": "Name of the product",
+  "brand": "Brand of the product",
+  "category": "Category of the product",
+  "description": "Short description",
+  "weight": "Product weight, volume, or size (e.g., '50cl', '500ml', '1kg', '400g')",
+  "barcode": "Barcode if visible on package",
+  "confidence": "Estimation confidence score from 0 to 1"
 }
 Rules:
+* If the weight, volume, or size is visible in the image (e.g., '50cl', '500ml', '350g'), extract it and put it in the "weight" field.
 * Do not guess uncertain values
 * Return null when uncertain
 * Confidence should be from 0–1
