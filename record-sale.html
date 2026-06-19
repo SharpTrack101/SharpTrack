@@ -167,9 +167,10 @@
 
         async function loadPageData() {
             try {
+                const tzOffset = new Date().getTimezoneOffset();
                 const [productData, salesData] = await Promise.allSettled([
                     apiRequest('/api/products'),
-                    apiRequest('/api/sales/today')
+                    apiRequest(`/api/sales/today?timezoneOffset=${tzOffset}`)
                 ]);
 
                 // Stats

@@ -93,8 +93,14 @@ router.get('/', authMiddleware, async (req, res) => {
 
 // GET TODAY'S SALES
 router.get('/today', authMiddleware, async (req, res) => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
+    let timezoneOffset = -60; // Default to Nigeria (UTC+1)
+    if (req.query.timezoneOffset !== undefined) {
+        timezoneOffset = parseInt(req.query.timezoneOffset);
+    }
+    const now = new Date();
+    const localNow = new Date(now.getTime() - (timezoneOffset * 60 * 1000));
+    localNow.setUTCHours(0, 0, 0, 0);
+    const start = new Date(localNow.getTime() + (timezoneOffset * 60 * 1000));
 
     try {
         const sales = await prisma.sale.findMany({
@@ -146,8 +152,14 @@ router.get('/recent', authMiddleware, async (req, res) => {
 
 // GET SALES STATS
 router.get('/stats', authMiddleware, async (req, res) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    let timezoneOffset = -60; // Default to Nigeria (UTC+1)
+    if (req.query.timezoneOffset !== undefined) {
+        timezoneOffset = parseInt(req.query.timezoneOffset);
+    }
+    const now = new Date();
+    const localNow = new Date(now.getTime() - (timezoneOffset * 60 * 1000));
+    localNow.setUTCHours(0, 0, 0, 0);
+    const today = new Date(localNow.getTime() + (timezoneOffset * 60 * 1000));
 
     try {
         const todaySales = await prisma.sale.findMany({
@@ -175,9 +187,16 @@ router.get('/stats', authMiddleware, async (req, res) => {
 
 // GET WEEKLY SALES (Last 7 Days)
 router.get('/weekly', authMiddleware, async (req, res) => {
-    const start = new Date();
-    start.setDate(start.getDate() - 6); // 7 days including today
-    start.setHours(0, 0, 0, 0);
+    let timezoneOffset = -60; // Default to Nigeria (UTC+1)
+    if (req.query.timezoneOffset !== undefined) {
+        timezoneOffset = parseInt(req.query.timezoneOffset);
+    }
+    const now = new Date();
+    const localNow = new Date(now.getTime() - (timezoneOffset * 60 * 1000));
+    localNow.setUTCHours(0, 0, 0, 0);
+    
+    // 7 days including today starts at: localNow - 6 days
+    const start = new Date(localNow.getTime() - (6 * 24 * 60 * 60 * 1000) + (timezoneOffset * 60 * 1000));
 
     try {
         const sales = await prisma.sale.findMany({
@@ -193,19 +212,25 @@ router.get('/weekly', authMiddleware, async (req, res) => {
         const weeklyData = [];
         
         for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
+            const d = new Date(localNow.getTime() - (i * 24 * 60 * 60 * 1000));
+            const dateStr = d.toISOString().split('T')[0];
             weeklyData.push({
-                dayName: days[d.getDay()],
-                dateString: d.toISOString().split('T')[0],
+                dayName: days[d.getUTCDay()],
+                dateString: dateStr,
                 amount: 0,
                 count: 0
             });
         }
 
+        // Helper to convert date to local date string
+        const getLocalDateString = (date, offset) => {
+            const localTime = new Date(date.getTime() - (offset * 60 * 1000));
+            return localTime.toISOString().split('T')[0];
+        };
+
         // Aggregate sales by date
         sales.forEach(sale => {
-            const saleDate = sale.soldAt.toISOString().split('T')[0];
+            const saleDate = getLocalDateString(sale.soldAt, timezoneOffset);
             const target = weeklyData.find(item => item.dateString === saleDate);
             if (target) {
                 target.amount += sale.totalAmount;

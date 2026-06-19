@@ -11,7 +11,11 @@ app.set('trust proxy', 1);
 
 // Security & parsing middleware
 app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+        // Allow all origins dynamically
+        callback(null, true);
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

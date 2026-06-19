@@ -153,12 +153,24 @@ router.get('/stats', adminAuth, async (req, res) => {
         const totalSales = await prisma.sale.count();
 
         // Revenue calculations
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
+        let timezoneOffset = -60; // Default to Nigeria (UTC+1)
+        if (req.query.timezoneOffset !== undefined) {
+            timezoneOffset = parseInt(req.query.timezoneOffset);
+        }
 
-        const monthStart = new Date();
-        monthStart.setDate(1);
-        monthStart.setHours(0, 0, 0, 0);
+        const now = new Date();
+        const localNow = new Date(now.getTime() - (timezoneOffset * 60 * 1000));
+        
+        // Today Start
+        const localTodayStart = new Date(localNow);
+        localTodayStart.setUTCHours(0, 0, 0, 0);
+        const todayStart = new Date(localTodayStart.getTime() + (timezoneOffset * 60 * 1000));
+
+        // Month Start
+        const localMonthStart = new Date(localNow);
+        localMonthStart.setUTCDate(1);
+        localMonthStart.setUTCHours(0, 0, 0, 0);
+        const monthStart = new Date(localMonthStart.getTime() + (timezoneOffset * 60 * 1000));
 
         const todaySales = await prisma.sale.findMany({
             where: { soldAt: { gte: todayStart } },
@@ -202,9 +214,17 @@ router.get('/charts/sales-trend', adminAuth, async (req, res) => {
     }
 
     const range = parseInt(req.query.range) || 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - range + 1);
-    startDate.setHours(0, 0, 0, 0);
+    let timezoneOffset = -60; // Default to Nigeria (UTC+1)
+    if (req.query.timezoneOffset !== undefined) {
+        timezoneOffset = parseInt(req.query.timezoneOffset);
+    }
+    
+    const now = new Date();
+    const localNow = new Date(now.getTime() - (timezoneOffset * 60 * 1000));
+    localNow.setUTCHours(0, 0, 0, 0);
+    
+    // Shift range start back to UTC
+    const startDate = new Date(localNow.getTime() - ((range - 1) * 24 * 60 * 60 * 1000) + (timezoneOffset * 60 * 1000));
 
     try {
         const sales = await prisma.sale.findMany({
@@ -215,10 +235,9 @@ router.get('/charts/sales-trend', adminAuth, async (req, res) => {
         // Initialize empty timeline
         const daysMap = [];
         for (let i = range - 1; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
+            const d = new Date(localNow.getTime() - (i * 24 * 60 * 60 * 1000));
             const dateStr = d.toISOString().split('T')[0];
-            const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
             daysMap.push({
                 dateString: dateStr,
                 formattedDate: formatted,
@@ -227,8 +246,14 @@ router.get('/charts/sales-trend', adminAuth, async (req, res) => {
             });
         }
 
+        // Helper to convert date to local date string
+        const getLocalDateString = (date, offset) => {
+            const localTime = new Date(date.getTime() - (offset * 60 * 1000));
+            return localTime.toISOString().split('T')[0];
+        };
+
         sales.forEach(sale => {
-            const saleDate = sale.soldAt.toISOString().split('T')[0];
+            const saleDate = getLocalDateString(sale.soldAt, timezoneOffset);
             const target = daysMap.find(day => day.dateString === saleDate);
             if (target) {
                 target.amount += sale.totalAmount;

@@ -264,13 +264,14 @@
 
             // Fetch fresh data in parallel
             try {
+                const tzOffset = new Date().getTimezoneOffset();
                 const [salesData, productStats, recentSales, activityData, userData, weeklyData, topProductsData] = await Promise.allSettled([
-                    apiRequest('/api/sales/today'),
+                    apiRequest(`/api/sales/today?timezoneOffset=${tzOffset}`),
                     apiRequest('/api/products/stats'),
                     apiRequest('/api/sales/recent'),
                     apiRequest('/api/activity?limit=5'),
                     apiRequest('/api/auth/me'),
-                    apiRequest('/api/sales/weekly'),
+                    apiRequest(`/api/sales/weekly?timezoneOffset=${tzOffset}`),
                     apiRequest('/api/sales/top-products')
                 ]);
 

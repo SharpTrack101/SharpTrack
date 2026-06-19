@@ -21,7 +21,6 @@ window.fetch = async function(resource, config) {
         if (token) {
             config.headers['Authorization'] = 'Bearer ' + token;
         }
-        config.credentials = 'include'; // still send cookies as a backup
     }
 
     const response = await _originalFetch(resource, config);
@@ -186,7 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadStatsSummary() {
         try {
-            const statsRes = await fetch('https://sharptrack-api.onrender.com/api/admin/stats');
+            const offset = new Date().getTimezoneOffset();
+            const statsRes = await fetch(`https://sharptrack-api.onrender.com/api/admin/stats?timezoneOffset=${offset}`);
             if (!statsRes.ok) throw new Error('Failed to load stats');
             const stats = await statsRes.json();
 
@@ -635,7 +635,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const range = parseInt(state.chartDataRange);
             let trend = [];
             try {
-                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/charts/sales-trend?range=${range}`);
+                const offset = new Date().getTimezoneOffset();
+                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/charts/sales-trend?range=${range}&timezoneOffset=${offset}`);
                 const data = await res.json();
                 trend = data.trend;
             } catch (err) {
@@ -745,7 +746,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (revenueContainer) {
             let trend = [];
             try {
-                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/charts/sales-trend?range=30`);
+                const offset = new Date().getTimezoneOffset();
+                const res = await fetch(`https://sharptrack-api.onrender.com/api/admin/charts/sales-trend?range=30&timezoneOffset=${offset}`);
                 const data = await res.json();
                 trend = data.trend;
             } catch (err) {
