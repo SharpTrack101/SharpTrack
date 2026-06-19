@@ -1,9 +1,36 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 
 // Store OTPs temporarily in memory
 const { otpStore } = require('./store');
 const { sendSMS } = require('./services/termii');
+
+// DEBUG ROUTE: List all active Sender IDs on Termii
+router.get('/debug-sender-ids', async (req, res) => {
+    const apiKey = process.env.TERMII_API_KEY;
+    if (!apiKey) {
+        return res.status(500).json({ error: 'TERMII_API_KEY is not configured on this server' });
+    }
+
+    try {
+        const response = await axios.get(`https://api.ng.termii.com/api/sender-id`, {
+            params: { api_key: apiKey }
+        });
+        res.json({
+            success: true,
+            data: response.data
+        });
+    } catch (err) {
+        const errMsg = err.response && err.response.data 
+            ? JSON.stringify(err.response.data) 
+            : err.message;
+        res.status(500).json({
+            success: false,
+            error: errMsg
+        });
+    }
+});
 
 // SEND OTP
 router.post('/send', async (req, res) => {
