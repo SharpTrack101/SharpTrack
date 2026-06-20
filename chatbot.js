@@ -42,7 +42,7 @@ Format:
         if (process.env.GEMINI_API_KEY) {
             const ai = getAi();
             const response = await ai.models.generateContent({
-                model: 'gemini-3.5-flash',
+                model: 'gemini-1.5-flash',
                 contents: [
                     systemPrompt,
                     `User query: "${message}"`
@@ -54,16 +54,90 @@ Format:
             geminiJson = JSON.parse(response.text);
         } else {
             console.warn("GEMINI_API_KEY not configured. Using local fallback parser for testing.");
-            const msg = message.toLowerCase();
-            if (msg.includes("add") && msg.includes("milo")) {
+            
+            // Helper functions for fallback parsing
+            const capitalizeWords = (str) => str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+            // Extract the user query if wrapped in the prompt template
+            let query = message;
+            const marker = 'User query: "';
+            const markerIdx = message.indexOf(marker);
+            if (markerIdx !== -1) {
+                query = message.substring(markerIdx + marker.length);
+                if (query.endsWith('"')) {
+                    query = query.slice(0, -1);
+                }
+            }
+
+            const msg = query.toLowerCase().trim();
+            // Clean punctuation but preserve letters, spaces, and currency symbols
+            const cleanMsg = msg.replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").replace(/\s+/g, " ").trim();
+
+            // 1. Add Stock / Put Product
+            const addMatch = cleanMsg.match(/(?:add|put|buy)\s+(\d+)\s+(.+?)(?:\s+at\s+n?[\u20A6₦]?\s*(\d+))?$/i) ||
+                             cleanMsg.match(/(?:add|put|buy)\s+(.+?)\s+(\d+)\s+(?:at\s+n?[\u20A6₦]?\s*(\d+))?$/i);
+            
+            // 2. Record Sale
+            const saleMatch = cleanMsg.match(/(?:sold|sell|recorded)\s+(\d+)\s+(.+)$/i) ||
+                              cleanMsg.match(/(?:sold|sell|recorded)\s+(.+?)\s+(\d+)$/i);
+
+            // 3. Update Price
+            const priceMatch = cleanMsg.match(/(?:update|change|set)\s+(.+?)\s+price\s+to\s+(\d+)/i) ||
+                               cleanMsg.match(/(?:update|change|set)\s+price\s+of\s+(.+?)\s+to\s+(\d+)/i);
+
+            // 4. Check Stock
+            const checkMatch = cleanMsg.match(/how\s+many\s+(.+?)(?:\s+do\s+i\s+have|\s+i\s+get|\s+remaining|\s+left)?$/i) ||
+                               cleanMsg.match(/(?:check\s+stock\s+of|stock\s+level\s+of|check\s+)\s+(.+)$/i);
+
+            if (addMatch && !cleanMsg.includes('sell') && !cleanMsg.includes('sold')) {
+                const qty = parseInt(addMatch[1], 10);
+                let prod = addMatch[2].replace(/\bat\b.*$/i, '').trim();
+                prod = prod.replace(/\bnaira\b.*$/i, '').trim();
+                const priceStr = addMatch[3];
+                const price = priceStr ? parseInt(priceStr, 10) : null;
+                
                 geminiJson = {
                     intent: "add_product",
-                    product: "Milo",
-                    quantity: 20,
-                    price: 1900,
-                    action: "Add 20 Milo at ₦1900"
+                    product: capitalizeWords(prod),
+                    quantity: qty,
+                    price: price,
+                    action: `Add ${qty} ${prod}` + (price ? ` at ₦${price}` : '')
                 };
-            } else if (msg.includes("running low") || msg.includes("low stock")) {
+            } else if (saleMatch) {
+                const qty = parseInt(saleMatch[1], 10);
+                let prod = saleMatch[2].trim();
+                prod = prod.replace(/\bnaira\b.*$/i, '').trim();
+                
+                geminiJson = {
+                    intent: "record_sale",
+                    product: capitalizeWords(prod),
+                    quantity: qty,
+                    price: null,
+                    action: `Record sale of ${qty} ${prod}`
+                };
+            } else if (priceMatch) {
+                const prod = priceMatch[1].trim();
+                const price = parseInt(priceMatch[2], 10);
+                
+                geminiJson = {
+                    intent: "update_price",
+                    product: capitalizeWords(prod),
+                    quantity: null,
+                    price: price,
+                    action: `Update ${prod} price to ₦${price}`
+                };
+            } else if (checkMatch) {
+                let prod = checkMatch[1].trim();
+                prod = prod.replace(/\b(?:do i have|i get|remaining|left|stock)\b/gi, '').trim();
+                
+                geminiJson = {
+                    intent: "check_stock",
+                    product: capitalizeWords(prod),
+                    quantity: null,
+                    price: null,
+                    action: `Check stock of ${prod}`
+                };
+            } else if (cleanMsg.includes("running low") || cleanMsg.includes("low stock") || cleanMsg.includes("run low") || cleanMsg.includes("alerts")) {
                 geminiJson = {
                     intent: "low_stock",
                     product: null,
@@ -71,7 +145,7 @@ Format:
                     price: null,
                     action: "What products are running low?"
                 };
-            } else if (msg.includes("today") && msg.includes("sale")) {
+            } else if (cleanMsg.includes("today") || cleanMsg.includes("summary") || cleanMsg.includes("report")) {
                 geminiJson = {
                     intent: "daily_summary",
                     product: null,
@@ -79,37 +153,13 @@ Format:
                     price: null,
                     action: "Show today's sales"
                 };
-            } else if (msg.includes("update") && msg.includes("indomie") && msg.includes("700")) {
-                geminiJson = {
-                    intent: "update_price",
-                    product: "Indomie",
-                    quantity: null,
-                    price: 700,
-                    action: "Update Indomie price to ₦700"
-                };
-            } else if (msg.includes("sold") && msg.includes("milo")) {
-                geminiJson = {
-                    intent: "record_sale",
-                    product: "Milo",
-                    quantity: 5,
-                    price: null,
-                    action: "I sold 5 Milo"
-                };
-            } else if (msg.includes("how many") && msg.includes("indomie")) {
-                geminiJson = {
-                    intent: "check_stock",
-                    product: "Indomie",
-                    quantity: null,
-                    price: null,
-                    action: "How many Indomie do I have?"
-                };
             } else {
                 geminiJson = {
                     intent: "unknown",
                     product: null,
                     quantity: null,
                     price: null,
-                    action: message
+                    action: query
                 };
             }
         }
