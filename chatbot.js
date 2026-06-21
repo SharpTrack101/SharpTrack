@@ -1,21 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('./middleware/auth');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 const axios = require('axios');
 
-let modelInstance = null;
+let glmClient = null;
 
-function getModel() {
-    if (!modelInstance) {
-        const apiKey = process.env.GEMINI_API_KEY;
+function getGLMClient() {
+    if (!glmClient) {
+        const apiKey = process.env.GLM_API_KEY;
         if (!apiKey) {
-            throw new Error('GEMINI_API_KEY environment variable is not configured');
+            throw new Error('GLM_API_KEY environment variable is not configured');
         }
-        const genAI = new GoogleGenerativeAI(apiKey);
-        modelInstance = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        glmClient = new OpenAI({
+            apiKey: apiKey,
+            baseURL: 'https://open.bigmodel.cn/api/paas/v4/'
+        });
     }
-    return modelInstance;
+    return glmClient;
+}
+
+async function callAI(systemPrompt, message) {
+    const client = getGLMClient();
+    const response = await client.chat.completions.create({
+        model: 'glm-4-flash',
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+        ]
+    });
+    return response.choices[0].message.content;
 }
 
 // POST /api/chat
@@ -40,14 +54,13 @@ Format:
 
         let geminiJson;
 
-        if (process.env.GEMINI_API_KEY) {
-            const model = getModel();
-            const prompt = `${systemPrompt}\n\nUser query: "${message}"`;
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            geminiJson = JSON.parse(response.text());
+        if (process.env.GLM_API_KEY) {
+            const rawText = await callAI(systemPrompt, `User query: "${message}"`);
+            // Strip markdown code fences if GLM wraps the JSON in them
+            const cleaned = rawText.replace(/```(?:json)?\n?/gi, '').replace(/```/g, '').trim();
+            geminiJson = JSON.parse(cleaned);
         } else {
-            console.warn("GEMINI_API_KEY not configured. Using local fallback parser for testing.");
+            console.warn("GLM_API_KEY not configured. Using local fallback parser for testing.");
             
             // Helper functions for fallback parsing
             const capitalizeWords = (str) => str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
