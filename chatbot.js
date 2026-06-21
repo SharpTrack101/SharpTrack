@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('./middleware/auth');
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
 
-let aiInstance = null;
+let modelInstance = null;
 
-function getAi() {
-    if (!aiInstance) {
+function getModel() {
+    if (!modelInstance) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             throw new Error('GEMINI_API_KEY environment variable is not configured');
         }
-        aiInstance = new GoogleGenAI({ apiKey });
+        const genAI = new GoogleGenerativeAI(apiKey);
+        modelInstance = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
     }
-    return aiInstance;
+    return modelInstance;
 }
 
 // POST /api/chat
@@ -40,18 +41,11 @@ Format:
         let geminiJson;
 
         if (process.env.GEMINI_API_KEY) {
-            const ai = getAi();
-            const response = await ai.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: [
-                    systemPrompt,
-                    `User query: "${message}"`
-                ],
-                config: {
-                    responseMimeType: "application/json"
-                }
-            });
-            geminiJson = JSON.parse(response.text);
+            const model = getModel();
+            const prompt = `${systemPrompt}\n\nUser query: "${message}"`;
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            geminiJson = JSON.parse(response.text());
         } else {
             console.warn("GEMINI_API_KEY not configured. Using local fallback parser for testing.");
             

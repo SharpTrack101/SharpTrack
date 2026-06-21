@@ -17,6 +17,7 @@
   "type": "commonjs",
   "dependencies": {
     "@google/genai": "^2.8.0",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.107.0",
     "axios": "^1.17.0",
