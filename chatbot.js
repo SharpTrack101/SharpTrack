@@ -40,17 +40,39 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     try {
-        const systemPrompt = `You are SharpTrack AI, an inventory assistant for Nigerian provision store owners.
-Extract intent and entities from user messages and return ONLY valid JSON with no extra text.
+        const systemPrompt = `You are SharpTrack AI, a smart and friendly inventory assistant for Nigerian provision store owners.
 
-Format:
+Your job is to understand what the user wants even if they say it casually, in broken English, or Nigerian Pidgin.
+
+Examples of what users might say and what they mean:
+- "abeg add 50 milo" → add_product: Milo, qty 50
+- "I don sell 5 fanta" → record_sale: Fanta, qty 5
+- "how many peak milk I get" → check_stock: Peak Milk
+- "wetin dey run low" → low_stock
+- "update indomie price to 650" → update_price: Indomie, ₦650
+- "make indomie 700 naira" → update_price: Indomie, ₦700
+- "today sales" → daily_summary
+- "how e go today" → daily_summary
+- "sup", "hey", "hello", "how far" → greeting
+
+Rules:
+1. Always try your best to understand the intent even if words are missing
+2. If you're 70% sure of the intent, act on it and confirm with the user
+3. Only ask for clarification if you genuinely cannot determine the product or quantity
+4. Never give the same error message twice
+5. Respond in a friendly, conversational Nigerian tone
+6. Keep responses short and clear
+
+Return ONLY valid JSON:
 {
-  "intent": "add_product|update_price|check_stock|low_stock|record_sale|daily_summary|unknown",
+  "intent": "add_product|update_price|check_stock|low_stock|record_sale|daily_summary|greeting|unknown",
   "product": "product name or null",
   "quantity": number or null,
   "price": number or null,
-  "action": "brief description"
-}`;
+  "confidence": 0.0 to 1.0,
+  "reply": "friendly response for greeting/unknown/clarification"
+}
+Do NOT include any text outside the JSON object.`;
 
         let geminiJson;
 
@@ -88,85 +110,149 @@ Format:
             // Clean punctuation but preserve letters, spaces, and currency symbols
             const cleanMsg = msg.replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").replace(/\s+/g, " ").trim();
 
-            // 1. Add Stock / Put Product
-            const addMatch = cleanMsg.match(/(?:add|put|buy)\s+(\d+)\s+(.+?)(?:\s+at\s+n?[\u20A6₦]?\s*(\d+))?$/i) ||
-                             cleanMsg.match(/(?:add|put|buy)\s+(.+?)\s+(\d+)\s+(?:at\s+n?[\u20A6₦]?\s*(\d+))?$/i);
-            
-            // 2. Record Sale
-            const saleMatch = cleanMsg.match(/(?:sold|sell|recorded)\s+(\d+)\s+(.+)$/i) ||
-                              cleanMsg.match(/(?:sold|sell|recorded)\s+(.+?)\s+(\d+)$/i);
+            // ── 1. Add Stock ─────────────────────────────────────────────────
+            // Standard: "add 50 milo", "put 10 peak", "buy 5 indomie"
+            // Pidgin:   "abeg add 50 milo", "abeg put 20 peak"
+            const addMatch =
+                cleanMsg.match(/(?:abeg\s+)?(?:add|put|buy)\s+(\d+)\s+(.+?)(?:\s+at\s+(?:n|₦|naira)?\s*(\d+))?$/i) ||
+                cleanMsg.match(/(?:abeg\s+)?(?:add|put|buy)\s+(.+?)\s+(\d+)(?:\s+at\s+(?:n|₦|naira)?\s*(\d+))?$/i);
 
-            // 3. Update Price
-            const priceMatch = cleanMsg.match(/(?:update|change|set)\s+(.+?)\s+price\s+to\s+(\d+)/i) ||
-                               cleanMsg.match(/(?:update|change|set)\s+price\s+of\s+(.+?)\s+to\s+(\d+)/i);
+            // ── 2. Record Sale ───────────────────────────────────────────────
+            // Standard: "sold 5 fanta", "sell 3 milo"
+            // Pidgin:   "I don sell 5 fanta", "I just sell 2 milo", "I sell 5 fanta"
+            const saleMatch =
+                cleanMsg.match(/(?:i\s+(?:don|just|don\s+just)\s+)?(?:sold?|sell|recorded?)\s+(\d+)\s+(.+)$/i) ||
+                cleanMsg.match(/(?:i\s+(?:don|just|don\s+just)\s+)?(?:sold?|sell|recorded?)\s+(.+?)\s+(\d+)$/i);
 
-            // 4. Check Stock
-            const checkMatch = cleanMsg.match(/how\s+many\s+(.+?)(?:\s+do\s+i\s+have|\s+i\s+get|\s+remaining|\s+left)?$/i) ||
-                               cleanMsg.match(/(?:check\s+stock\s+of|stock\s+level\s+of|check\s+)\s+(.+)$/i);
+            // ── 3. Update Price ──────────────────────────────────────────────
+            // Standard: "update indomie price to 650", "set price of milo to 800"
+            // Pidgin:   "make indomie 700 naira", "make indomie 700", "change indomie price to 700"
+            const priceMatch =
+                cleanMsg.match(/(?:update|change|set)\s+(.+?)\s+price\s+to\s+(\d+)/i) ||
+                cleanMsg.match(/(?:update|change|set)\s+price\s+of\s+(.+?)\s+to\s+(\d+)/i) ||
+                cleanMsg.match(/make\s+(.+?)\s+(\d+)(?:\s+naira)?/i) ||
+                cleanMsg.match(/(.+?)\s+price\s+(?:is\s+now|now)\s+(\d+)/i);
 
-            if (addMatch && !cleanMsg.includes('sell') && !cleanMsg.includes('sold')) {
-                const qty = parseInt(addMatch[1], 10);
-                let prod = addMatch[2].replace(/\bat\b.*$/i, '').trim();
-                prod = prod.replace(/\bnaira\b.*$/i, '').trim();
-                const priceStr = addMatch[3];
+            // ── 4. Check Stock ───────────────────────────────────────────────
+            // Standard: "how many milo do I have"
+            // Pidgin:   "how many peak milk I get", "how many indomie I get remaining"
+            const checkMatch =
+                cleanMsg.match(/how\s+many\s+(.+?)(?:\s+(?:do\s+)?i\s+(?:have|get)|\s+remaining|\s+left|\s+dey)?$/i) ||
+                cleanMsg.match(/(?:check\s+stock\s+of|stock\s+(?:level\s+)?of|check)\s+(.+)$/i);
+
+            // ── 5. Low Stock ─────────────────────────────────────────────────
+            // Pidgin:   "wetin dey run low", "wetin dey finish"
+            const isLowStock =
+                /(?:wetin\s+dey\s+(?:run\s+)?low|wetin\s+dey\s+finish)/.test(cleanMsg) ||
+                cleanMsg.includes("running low") || cleanMsg.includes("low stock") ||
+                cleanMsg.includes("run low") || cleanMsg.includes("alerts") ||
+                cleanMsg.includes("dey finish");
+
+            // ── 6. Daily Summary ─────────────────────────────────────────────
+            // Pidgin:   "how e go today", "how today go"
+            const isSummary =
+                /how\s+(?:e\s+go|today\s+go)/.test(cleanMsg) ||
+                cleanMsg.includes("today sales") || cleanMsg.includes("today\'s sales") ||
+                cleanMsg.includes("summary") || cleanMsg.includes("daily report") ||
+                (cleanMsg.includes("today") && cleanMsg.includes("sale")) ||
+                (cleanMsg.includes("today") && cleanMsg.includes("report"));
+
+            // ── 7. Greeting ──────────────────────────────────────────────────
+            const isGreeting =
+                /^(?:hi|hey|hello|sup|howdy|how\s+far|how\s+now|na\s+wao?|oya|good\s+(?:morning|afternoon|evening)|what(?:'s|s)\s+up|how\s+are\s+you|morning|afternoon|evening)\b/.test(cleanMsg);
+
+            if (addMatch && !cleanMsg.match(/\b(?:sell|sold|sale)\b/)) {
+                // Determine which capture group holds qty vs product
+                let qty, prod, priceStr;
+                if (/^\d+$/.test(addMatch[1])) {
+                    qty = parseInt(addMatch[1], 10);
+                    prod = addMatch[2];
+                    priceStr = addMatch[3];
+                } else {
+                    prod = addMatch[1];
+                    qty = parseInt(addMatch[2], 10);
+                    priceStr = addMatch[3];
+                }
+                prod = prod.replace(/\b(?:at|naira|₦)\b.*/i, '').trim();
                 const price = priceStr ? parseInt(priceStr, 10) : null;
-                
+
                 geminiJson = {
                     intent: "add_product",
                     product: capitalizeWords(prod),
                     quantity: qty,
                     price: price,
-                    action: `Add ${qty} ${prod}` + (price ? ` at ₦${price}` : '')
+                    confidence: 0.9,
+                    reply: null
                 };
             } else if (saleMatch) {
-                const qty = parseInt(saleMatch[1], 10);
-                let prod = saleMatch[2].trim();
-                prod = prod.replace(/\bnaira\b.*$/i, '').trim();
-                
+                let qty, prod;
+                if (/^\d+$/.test(saleMatch[1])) {
+                    qty = parseInt(saleMatch[1], 10);
+                    prod = saleMatch[2];
+                } else {
+                    prod = saleMatch[1];
+                    qty = parseInt(saleMatch[2], 10);
+                }
+                prod = prod.replace(/\bnaira\b.*/i, '').trim();
+
                 geminiJson = {
                     intent: "record_sale",
                     product: capitalizeWords(prod),
                     quantity: qty,
                     price: null,
-                    action: `Record sale of ${qty} ${prod}`
+                    confidence: 0.9,
+                    reply: null
                 };
             } else if (priceMatch) {
                 const prod = priceMatch[1].trim();
                 const price = parseInt(priceMatch[2], 10);
-                
+
                 geminiJson = {
                     intent: "update_price",
                     product: capitalizeWords(prod),
                     quantity: null,
                     price: price,
-                    action: `Update ${prod} price to ₦${price}`
+                    confidence: 0.9,
+                    reply: null
                 };
             } else if (checkMatch) {
                 let prod = checkMatch[1].trim();
-                prod = prod.replace(/\b(?:do i have|i get|remaining|left|stock)\b/gi, '').trim();
-                
+                prod = prod.replace(/\b(?:do\s+i\s+have|i\s+get|remaining|left|stock|dey)\b/gi, '').trim();
+
                 geminiJson = {
                     intent: "check_stock",
                     product: capitalizeWords(prod),
                     quantity: null,
                     price: null,
-                    action: `Check stock of ${prod}`
+                    confidence: 0.85,
+                    reply: null
                 };
-            } else if (cleanMsg.includes("running low") || cleanMsg.includes("low stock") || cleanMsg.includes("run low") || cleanMsg.includes("alerts")) {
+            } else if (isLowStock) {
                 geminiJson = {
                     intent: "low_stock",
                     product: null,
                     quantity: null,
                     price: null,
-                    action: "What products are running low?"
+                    confidence: 0.95,
+                    reply: null
                 };
-            } else if (cleanMsg.includes("today") || cleanMsg.includes("summary") || cleanMsg.includes("report")) {
+            } else if (isSummary) {
                 geminiJson = {
                     intent: "daily_summary",
                     product: null,
                     quantity: null,
                     price: null,
-                    action: "Show today's sales"
+                    confidence: 0.9,
+                    reply: null
+                };
+            } else if (isGreeting) {
+                geminiJson = {
+                    intent: "greeting",
+                    product: null,
+                    quantity: null,
+                    price: null,
+                    confidence: 1.0,
+                    reply: "E don do! 👋 I'm SharpTrack AI. Wetin you need? I fit help you add stock, record sales, check prices, or show today's summary."
                 };
             } else {
                 geminiJson = {
@@ -174,7 +260,8 @@ Format:
                     product: null,
                     quantity: null,
                     price: null,
-                    action: query
+                    confidence: 0.0,
+                    reply: null
                 };
             }
         }
@@ -326,10 +413,23 @@ Format:
                 break;
             }
 
-            case 'unknown':
-            default:
-                responseMessage = "Abeg, I no understand that command. You fit ask me to add stock, update price, check stock levels, record sale, or show today's summary.";
+            case 'greeting': {
+                // Use GLM's reply if available, otherwise the fallback reply from geminiJson
+                responseMessage = geminiJson.reply || "E don do! 👋 I'm SharpTrack AI. Wetin you need? I fit help you add stock, record sales, check prices, or show today's summary.";
                 break;
+            }
+
+            case 'unknown':
+            default: {
+                // Use GLM's clarification reply if it gave one
+                const unknownReplies = [
+                    "Hmm, I no fully grab that one. Try say: 'add 20 milo', 'I don sell 5 fanta', or 'wetin dey run low'.",
+                    "I no understand that command o. You fit rephrase? E.g. 'check indomie stock' or 'today sales'.",
+                    "Abeg help me understand — which product, which action? E.g. 'make indomie 700' or 'abeg add 30 peak'."
+                ];
+                responseMessage = geminiJson.reply || unknownReplies[Math.floor(Math.random() * unknownReplies.length)];
+                break;
+            }
         }
 
         res.json({
