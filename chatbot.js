@@ -266,7 +266,7 @@ Do NOT include any text outside the JSON object.`;
             }
         }
 
-        const { intent, product, quantity, price } = geminiJson;
+        const { intent, product, quantity, price, confidence } = geminiJson;
 
         const PORT = process.env.PORT || 3000;
         const apiBase = `http://localhost:${PORT}`;
@@ -276,6 +276,53 @@ Do NOT include any text outside the JSON object.`;
         };
 
         let responseMessage = '';
+
+        // ── General-conversation fallback ────────────────────────────────────
+        // If the AI couldn't determine a clear inventory intent (or is less
+        // than 50% confident), hand the raw message back to GLM-4 for a
+        // friendly, context-aware conversational reply.
+        if (intent === 'unknown' || (typeof confidence === 'number' && confidence < 0.5)) {
+            if (process.env.GLM_API_KEY) {
+                try {
+                    const glm = getGLMClient();
+                    const generalResponse = await glm.chat.completions.create({
+                        model: 'glm-4-flash',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are SharpTrack AI, a friendly assistant for Nigerian provision store owners.
+Answer general questions helpfully. If the question is about inventory, guide the user on what to say.
+Keep responses short, friendly, and in Nigerian conversational tone.
+Examples of inventory commands you support:
+- "abeg add 50 milo" → add stock
+- "I don sell 5 fanta" → record sale
+- "how many peak milk I get" → check stock
+- "wetin dey run low" → low stock alert
+- "make indomie 700" → update price
+- "today sales" → daily summary`
+                            },
+                            { role: 'user', content: message }
+                        ]
+                    });
+                    responseMessage = generalResponse.choices[0].message.content;
+                } catch (glmErr) {
+                    console.error('GLM general-conversation fallback failed:', glmErr.message);
+                    // Graceful degradation: use a warm static reply
+                    responseMessage = geminiJson.reply ||
+                        "I dey here o! 😊 Tell me wetin you need — I fit help you manage your stock, record sales, or check prices.";
+                }
+            } else {
+                // No GLM key: friendly static fallback
+                responseMessage = geminiJson.reply ||
+                    "I dey here o! 😊 Tell me wetin you need — I fit help you manage your stock, record sales, or check prices.";
+            }
+
+            return res.json({
+                success: true,
+                response: responseMessage,
+                data: geminiJson
+            });
+        }
 
         switch (intent) {
             case 'add_product': {
@@ -420,16 +467,13 @@ Do NOT include any text outside the JSON object.`;
             }
 
             case 'unknown':
-            default: {
-                // Use GLM's clarification reply if it gave one
-                const unknownReplies = [
-                    "Hmm, I no fully grab that one. Try say: 'add 20 milo', 'I don sell 5 fanta', or 'wetin dey run low'.",
-                    "I no understand that command o. You fit rephrase? E.g. 'check indomie stock' or 'today sales'.",
-                    "Abeg help me understand — which product, which action? E.g. 'make indomie 700' or 'abeg add 30 peak'."
-                ];
-                responseMessage = geminiJson.reply || unknownReplies[Math.floor(Math.random() * unknownReplies.length)];
+            default:
+                // The general-conversation block above already handles true unknowns.
+                // This branch only fires if intent is explicitly 'unknown' but GLM_API_KEY
+                // is absent AND the fallback guard above somehow didn't short-circuit.
+                responseMessage = geminiJson.reply ||
+                    "I dey here o! 😊 Tell me wetin you need — I fit help you add stock, record sales, check prices, or show today's summary.";
                 break;
-            }
         }
 
         res.json({
