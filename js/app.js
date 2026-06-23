@@ -810,13 +810,14 @@ Extract intent and return ONLY valid JSON:
   "quantity": number or null,
   "price": number or null,
   "confidence": 0.0 to 1.0,
-  "reply": "friendly response if intent is greeting or unknown"
+  "reply": "friendly standard English response if intent is greeting or unknown"
 }
 
 For greetings like "hey", "hello", "how far" — return intent "greeting" with a friendly reply.
 For unclear messages — ask ONE clarifying question instead of repeating the same error.
 Never return the same error message twice in a row.
-Be conversational and friendly like a Nigerian assistant.
+Be conversational, helpful, and friendly.
+CRITICAL: Always respond in standard professional English. Never respond in Pidgin or slang.
 
 User query: "${query}"`;
 
