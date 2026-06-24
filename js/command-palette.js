@@ -5,6 +5,7 @@
 const COMMANDS = [
     { id: 'dashboard', title: 'Go to Dashboard', subtitle: 'View sales stats, revenue, and activity', action: () => window.location.href = 'dashboard.html', category: 'Navigation' },
     { id: 'inventory', title: 'Go to Inventory', subtitle: 'Manage stock levels, view product listings', action: () => window.location.href = 'inventory.html', category: 'Navigation' },
+    { id: 'analytics', title: 'Open Analytics Board', subtitle: 'View detailed sales, profits, and revenue metrics', action: () => window.location.href = 'analytics.html', category: 'Navigation' },
     { id: 'add-stock', title: 'Add Stock', subtitle: 'Add a new product or restock existing items', action: () => window.location.href = 'add-stock.html', category: 'Actions' },
     { id: 'record-sale', title: 'Record a Sale', subtitle: 'Log new customer transactions and payments', action: () => window.location.href = 'record-sale.html', category: 'Actions' },
     { id: 'notifications', title: 'View Notifications', subtitle: 'Check recent alerts and low-stock indicators', action: () => { toggleNotifPanel(); toggleCommandPalette(false); }, category: 'Actions' },

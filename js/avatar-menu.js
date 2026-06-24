@@ -112,6 +112,10 @@ function showShortcutGuide() {
                         <span class="shortcut-keys"><kbd>G</kbd> then <kbd>S</kbd></span>
                     </div>
                     <div class="shortcut-row">
+                        <span class="shortcut-desc">Go to Analytics Board</span>
+                        <span class="shortcut-keys"><kbd>G</kbd> then <kbd>Y</kbd></span>
+                    </div>
+                    <div class="shortcut-row">
                         <span class="shortcut-desc">Go to Add Stock</span>
                         <span class="shortcut-keys"><kbd>G</kbd> then <kbd>A</kbd></span>
                     </div>

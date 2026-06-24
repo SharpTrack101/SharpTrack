@@ -7,6 +7,7 @@
     <meta name="description" content="Your SharpTrack business dashboard — view sales, inventory and quick actions.">
     <link rel="icon" type="image/png" href="logo2.png">
     <link rel="stylesheet" href="css/design-system.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { padding-bottom: 90px; }
         .greeting { margin-bottom: 20px; }
@@ -142,19 +143,13 @@
         <div class="section analytics-section">
             <div class="section-header">
                 <h2>Weekly Sales Trend</h2>
+                <a href="analytics.html" class="view-all">View Analytics board ›</a>
             </div>
-            <div class="chart-container" id="weekly-chart-container">
-                <div class="chart-bars" id="weekly-chart-bars">
-                    <div style="width:100%;height:100%;display:flex;align-items:flex-end;justify-content:space-around;padding:0 8px;">
-                        <div class="skeleton" style="width:20px;height:40px;border-radius:4px 4px 0 0;"></div>
-                        <div class="skeleton" style="width:20px;height:80px;border-radius:4px 4px 0 0;"></div>
-                        <div class="skeleton" style="width:20px;height:50px;border-radius:4px 4px 0 0;"></div>
-                        <div class="skeleton" style="width:20px;height:90px;border-radius:4px 4px 0 0;"></div>
-                        <div class="skeleton" style="width:20px;height:30px;border-radius:4px 4px 0 0;"></div>
-                        <div class="skeleton" style="width:20px;height:70px;border-radius:4px 4px 0 0;"></div>
-                        <div class="skeleton" style="width:20px;height:100px;border-radius:4px 4px 0 0;"></div>
-                    </div>
-                </div>
+            <div id="weekly-trend-indicator" style="font-size: 12.5px; margin-bottom: 12px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                Checking weekly performance...
+            </div>
+            <div class="chart-container" id="weekly-chart-container" style="height: 160px; position: relative; padding: 12px 6px; margin-bottom: 8px;">
+                <canvas id="weeklyRevenueChart"></canvas>
             </div>
         </div>
 
@@ -351,28 +346,125 @@
             `;
         }
 
+        let dashboardChartInstance = null;
+        let lastWeeklyData = null;
+
         function renderWeeklyChart(weeklySales) {
-            const container = document.getElementById('weekly-chart-bars');
-            if (!container) return;
+            lastWeeklyData = weeklySales;
+            const canvas = document.getElementById('weeklyRevenueChart');
+            const trendEl = document.getElementById('weekly-trend-indicator');
+            if (!canvas) return;
 
             if (!weeklySales || weeklySales.length === 0) {
-                container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);width:100%;">No sales trend data yet</div>`;
+                const parent = canvas.parentElement;
+                parent.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);width:100%;">No sales trend data yet</div>`;
+                if (trendEl) trendEl.textContent = 'No sales trend data yet';
                 return;
             }
 
-            const maxAmount = Math.max(...weeklySales.map(d => d.amount), 1000); // Minimum scale of ₦1,000
+            const labels = weeklySales.map(d => d.dayName);
+            const data = weeklySales.map(d => d.amount);
 
-            container.innerHTML = weeklySales.map(d => {
-                const heightPercent = Math.max((d.amount / maxAmount) * 100, 4); // Min 4% height so bar is visible
-                return `
-                    <div class="chart-bar-wrapper">
-                        <div class="chart-bar-tooltip">₦${formatNumber(Math.round(d.amount))}</div>
-                        <div class="chart-bar" style="height: ${heightPercent}%;"></div>
-                        <div class="chart-label">${d.dayName}</div>
-                    </div>
-                `;
-            }).join('');
+            let trendText = 'Stable sales trend';
+            if (weeklySales.length >= 2) {
+                const lastDay = weeklySales[weeklySales.length - 1].amount;
+                const prevDay = weeklySales[weeklySales.length - 2].amount;
+                if (lastDay > prevDay) {
+                    const diff = prevDay > 0 ? Math.round(((lastDay - prevDay) / prevDay) * 100) : 100;
+                    trendText = `<span style="color:var(--green); display:flex; align-items:center; gap:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg> Up by ${diff}% today vs yesterday</span>`;
+                } else if (lastDay < prevDay) {
+                    const diff = prevDay > 0 ? Math.round(((prevDay - lastDay) / prevDay) * 100) : 100;
+                    trendText = `<span style="color:var(--red); display:flex; align-items:center; gap:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg> Down by ${diff}% today vs yesterday</span>`;
+                } else {
+                    trendText = 'Sales constant today compared to yesterday';
+                }
+            }
+            if (trendEl) trendEl.innerHTML = trendText;
+
+            const ctx = canvas.getContext('2d');
+            if (dashboardChartInstance) {
+                dashboardChartInstance.destroy();
+            }
+
+            const theme = getTheme();
+            const gridColor = theme === 'dark' ? '#2d3a34' : '#e8e3d8';
+            const textColor = theme === 'dark' ? '#7a9486' : '#7a8880';
+
+            const grad = ctx.createLinearGradient(0, 0, 0, 150);
+            grad.addColorStop(0, 'rgba(37, 160, 96, 0.25)');
+            grad.addColorStop(1, 'rgba(37, 160, 96, 0.01)');
+
+            dashboardChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: data,
+                        borderColor: '#25a060',
+                        borderWidth: 2.5,
+                        backgroundColor: grad,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#25a060'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: theme === 'dark' ? '#1a201c' : '#ffffff',
+                            titleColor: theme === 'dark' ? '#e8efe9' : '#1a2e26',
+                            bodyColor: theme === 'dark' ? '#b0c4b8' : '#3d5a4e',
+                            borderColor: gridColor,
+                            borderWidth: 1,
+                            padding: 8,
+                            titleFont: { family: 'Inter', weight: '700', size: 11 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: ₦' + context.parsed.y.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: textColor,
+                                font: { family: 'Inter', size: 9, weight: '500' }
+                            }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                font: { family: 'Inter', size: 9 },
+                                callback: function(value) {
+                                    if (value >= 1000) return '₦' + (value / 1000).toFixed(0) + 'k';
+                                    return '₦' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
+
+        window.addEventListener('themeChanged', () => {
+            if (lastWeeklyData) {
+                setTimeout(() => {
+                    renderWeeklyChart(lastWeeklyData);
+                }, 100);
+            }
+        });
 
         function renderTopSellingProducts(topProducts) {
             const container = document.getElementById('top-selling-products');

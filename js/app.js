@@ -230,6 +230,8 @@ function toggleTheme() {
     const current = getTheme();
     const next = current === 'dark' ? 'light' : 'dark';
     setTheme(next);
+    // Dispatch custom event for charts to update colors
+    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: next } }));
     // Persist to server
     const token = getToken();
     if (token) {
@@ -529,6 +531,9 @@ function handleGlobalShortcuts(e) {
         } else if (key === 's') {
             e.preventDefault();
             window.location.href = 'record-sale.html';
+        } else if (key === 'y') {
+            e.preventDefault();
+            window.location.href = 'analytics.html';
         } else if (key === 'a') {
             e.preventDefault();
             window.location.href = 'add-stock.html';
